@@ -24,10 +24,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'recipes.apps.RecipesConfig',
     'rest_framework',
+    'rest_framework.authtoken',
     'djoser',
-    'rest_framework_simplejwt',
+    'recipes.apps.RecipesConfig',
 ]
 
 MIDDLEWARE = [
@@ -115,11 +115,20 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
+        'rest_framework.authentication.TokenAuthentication',
+    ]
 }
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=100),
-    'AUTH_HEADER_TYPES': ('Bearer',),
+DJOSER = {
+    "LOGIN_FIELD": "email",
+    "PERMISSIONS": {
+        "user": ["rest_framework.permissions.IsAuthenticated"],
+        "user_list": ["rest_framework.permissions.AllowAny"],
+    },
+    "SERIALIZERS": {
+        "user": "recipes.serializers.CustomUserSerializer",
+        "current_user": "recipes.serializers.CustomUserSerializer",
+        "user_create": "recipes.serializers.CustomUserCreateSerializer",
+    },
+    "HIDE_USERS": False,
 }

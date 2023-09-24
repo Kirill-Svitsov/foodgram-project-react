@@ -1,13 +1,41 @@
 from rest_framework import serializers
 from djoser.serializers import UserSerializer
+from djoser.serializers import UserCreateSerializer
+from django.core.validators import RegexValidator
 
 from .models import *
 
 
+class CustomUserCreateSerializer(UserCreateSerializer):
+    username_validator = RegexValidator(
+        regex=r'^[\w.@+-]+$',
+        message=(
+            'Username должен содержать только буквы, цифры, '
+            'и следующие символы: @ . + -'
+        ),
+    )
+
+    class Meta(UserCreateSerializer.Meta):
+        fields = ('email', 'username', 'password', 'first_name', 'last_name')
+
+    username = serializers.CharField(
+        validators=[username_validator],
+        max_length=150,
+    )
+
+
 class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
+    def get_is_subscribed(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return user.following.filter(author=obj).exists()
+        return False
+
     class Meta:
         model = CustomUser
-        fields = ('email', 'id', 'username', 'first_name', 'last_name')
+        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed')
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -60,7 +88,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['author'] = CustomUserSerializer(instance.author).data
-        representation['tags'] = TagSerializer(instance.tags.all(), many=True).data
-        representation['ingredients'] = RecipeIngredientSerializer(instance.recipeingredient_set.all(), many=True).data
+        representation['author'] = CustomUserSerializer(instance.author, context=self.context).data
+        representation['tags'] = TagSerializer(instance.tags.all(), many=True, context=self.context).data
+        representation['ingredients'] = RecipeIngredientSerializer(instance.recipeingredient_set.all(), many=True,
+                                                                   context=self.context).data
         return representation
+
+
+class ShoppingListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShoppingList
+        fields = '__all__'
