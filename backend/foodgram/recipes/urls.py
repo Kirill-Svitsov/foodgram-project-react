@@ -4,6 +4,7 @@ from .views import *
 
 router = DefaultRouter()
 router.register(r'recipes', RecipeViewSet, basename='recipe')
+router.register(r'ingredients', IngredientViewSet, basename='ingredients')
 router.register(r'tags', TagViewSet, basename='tag')
 router.register(r'users', CustomUserViewSet, basename='users')
 router.register(r'users/me', CustomUserViewSet, basename='current-user')

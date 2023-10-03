@@ -51,8 +51,6 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
-    ingredient = IngredientSerializer()
-
     class Meta:
         model = RecipeIngredient
         fields = ('ingredient', 'amount')
@@ -73,14 +71,12 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
 
         for ingredient_data in ingredients_data:
-            ingredient, created = Ingredient.objects.get_or_create(
-                name=ingredient_data['ingredient']['name'],
-                measurement_unit=ingredient_data['ingredient']['measurement_unit']
-            )
+            ingredient = ingredient_data['ingredient']
+            amount = ingredient_data['amount']
             RecipeIngredient.objects.create(
                 recipe=recipe,
                 ingredient=ingredient,
-                amount=ingredient_data['amount']
+                amount=amount
             )
         recipe.tags.set(tags_data)
 
@@ -89,7 +85,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['author'] = CustomUserSerializer(instance.author, context=self.context).data
-        representation['tags'] = TagSerializer(instance.tags.all(), many=True, context=self.context).data
+        representation['tags'] = TagSerializer(instance.tags.all(),
+                                               many=True, context=self.context).data
         representation['ingredients'] = RecipeIngredientSerializer(instance.recipeingredient_set.all(), many=True,
                                                                    context=self.context).data
         return representation

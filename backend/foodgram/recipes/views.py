@@ -7,7 +7,7 @@ from djoser.views import UserViewSet
 
 from django.http import HttpResponse
 
-from .permissions import IsAuthorOrReadOnly, AllowAnyForCreate, AllowAnyForToken
+from .permissions import *
 from .models import *
 from .serializers import *
 from .generate_shopping_list import generate_csv
@@ -76,6 +76,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     @action(detail=True, methods=['post'])
     def shopping_cart(self, request):
         recipe = self.get_object()
@@ -96,6 +103,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         generate_csv(shopping_list, response)
 
         return response
+
+
+class RecipeIngredientViewSet(viewsets.ModelViewSet):
+    queryset = RecipeIngredient.objects.all()
+    serializer_class = RecipeIngredientSerializer
 
 
 class ShoppingListViewSet(viewsets.ModelViewSet):
