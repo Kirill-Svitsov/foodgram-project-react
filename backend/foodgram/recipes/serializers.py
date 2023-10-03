@@ -57,7 +57,13 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    ingredients = RecipeIngredientSerializer(many=True, write_only=True)
+    ingredients = serializers.ListField(
+        child=serializers.DictField(
+            child=serializers.IntegerField(),  # 'id': ingredient_id
+            required=True
+        ),
+        write_only=True
+    )
     tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
 
     class Meta:
@@ -71,11 +77,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
 
         for ingredient_data in ingredients_data:
-            ingredient = ingredient_data['ingredient']
+            ingredient_id = ingredient_data['id']
             amount = ingredient_data['amount']
             RecipeIngredient.objects.create(
                 recipe=recipe,
-                ingredient=ingredient,
+                ingredient_id=ingredient_id,
                 amount=amount
             )
         recipe.tags.set(tags_data)

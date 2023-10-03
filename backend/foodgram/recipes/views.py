@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth.hashers import check_password
@@ -10,6 +11,7 @@ from django.http import HttpResponse
 from .permissions import *
 from .models import *
 from .serializers import *
+from .pagination import CustomPageNumberPagination
 from .generate_shopping_list import generate_csv
 
 
@@ -18,9 +20,9 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     permission_classes = [AllowAnyForCreate, ]
 
-    def retrieve(self, request, *args, **kwargs):
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    # def retrieve(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(request.user)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
     def set_password(self, request, *args, **kwargs):
@@ -74,11 +76,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthorOrReadOnly]
+    pagination_class = CustomPageNumberPagination
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials were not provided."},
+                            status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)

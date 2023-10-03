@@ -1,4 +1,17 @@
 # praktikum_new_diplom
+Список эндпоинтов:
+- Пользователи:
+```
+http://localhost/api/users/
+```
+- Тэги:
+```
+http://localhost/api/tags/
+```
+- Рецепты:
+```
+http://localhost/api/recipes/
+```
 Пример POST запроса на создание рецепта:
 ```
 {
@@ -12,4 +25,20 @@
   ],
   "tags": [1, 2]
 }
+```
+- Скачать список покупок:
+```
+http://localhost/api/recipes/download_shopping_cart/
+```
+- Избранное:
+```
+http://localhost/api/recipes/{id}/favorite/
+```
+- Список подписок:
+```
+http://localhost/api/users/subscriptions/
+```
+- Ингредиенты:
+```
+http://localhost/api/ingredients/
 ```
