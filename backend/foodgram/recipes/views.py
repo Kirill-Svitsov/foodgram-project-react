@@ -112,6 +112,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return response
 
+    @action(detail=True, methods=['post', 'delete'], url_path='favorite', permission_classes=[IsAuthenticated])
+    def add_or_remove_from_favorites(self, request, pk=None):
+        recipe = self.get_object()
+        if request.method == 'POST':
+            favorite, created = Favorite.objects.get_or_create(
+                user=request.user,
+                recipe=recipe
+            )
+            if created:
+                return Response({"detail": "Recipe added to favorites successfully."}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"detail": "Recipe is already in favorites."}, status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'DELETE':
+            try:
+                favorite = Favorite.objects.get(user=request.user, recipe=recipe)
+                favorite.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Favorite.DoesNotExist:
+                return Response({"detail": "Recipe is not in favorites."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class RecipeIngredientViewSet(viewsets.ModelViewSet):
     queryset = RecipeIngredient.objects.all()
