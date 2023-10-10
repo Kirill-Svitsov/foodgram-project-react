@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth.hashers import check_password
@@ -20,9 +20,14 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     permission_classes = [AllowAnyForCreate, ]
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(request.user)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+    @action(detail=False, methods=['get'], url_path='me')
+    def check_me(self, request, *args, **kwargs):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Response({'detail': 'Authentication credentials were not provided.'},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
     def set_password(self, request, *args, **kwargs):
@@ -46,18 +51,55 @@ class CustomUserViewSet(UserViewSet):
 
         return Response({'detail': 'Password changed successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
-    # def create(self, request, *args, **kwargs):
-    #     self.serializer_class = CustomUserCreateSerializer
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     user = self.request.user
-    #     user.first_name = request.data.get('first_name')
-    #     user.last_name = request.data.get('last_name')
-    #     user.save()
-    #
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='subscriptions',
+        permission_classes=[IsAuthenticated]
+    )
+    def get_subscriptions(self, request):
+        subscriptions = Follow.objects.filter(user=request.user)
+        serializer = SubscribedAuthorsSerializer(subscriptions, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=("POST", "DELETE"),
+        permission_classes=(IsAuthenticated,),
+        url_path='subscribe',
+    )
+    def manage_following(self, request, **kwargs):
+        user = self.get_object()
+        following = Follow.objects.filter(
+            user=request.user, author=user
+        ).exists()
+        if request.method == "POST":
+            if user == request.user:
+                return Response(
+                    {"detail": "You can not subscribe for yourself."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if not following:
+                obj = Follow.objects.create(
+                    user=request.user, author=user)
+                serializer = SubscribedAuthorsSerializer(
+                    obj, context={"request": request}
+                )
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return Response(
+                    {"detail": "You already subscribe for this user."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if not following:
+            return Response(
+                {"detail": "You dont subscribe for this user."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        Follow.objects.filter(user=request.user, author=user).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -83,13 +125,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return Response({"detail": "Authentication credentials were not provided."},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "Authentication credentials were not provided."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers)
 
     @action(detail=True, methods=['post'])
     def shopping_cart(self, request):
@@ -112,7 +159,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @action(detail=True, methods=['post', 'delete'], url_path='favorite', permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        url_path='favorite',
+        permission_classes=[IsAuthenticated]
+    )
     def add_or_remove_from_favorites(self, request, pk=None):
         recipe = self.get_object()
         if request.method == 'POST':
@@ -121,16 +173,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe=recipe
             )
             if created:
-                return Response({"detail": "Recipe added to favorites successfully."}, status=status.HTTP_201_CREATED)
+                return Response(
+                    {"detail": "Recipe added to favorites successfully."},
+                    status=status.HTTP_201_CREATED
+                )
             else:
-                return Response({"detail": "Recipe is already in favorites."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "Recipe is already in favorites."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         elif request.method == 'DELETE':
             try:
                 favorite = Favorite.objects.get(user=request.user, recipe=recipe)
                 favorite.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Favorite.DoesNotExist:
-                return Response({"detail": "Recipe is not in favorites."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "Recipe is not in favorites."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
 
 class RecipeIngredientViewSet(viewsets.ModelViewSet):

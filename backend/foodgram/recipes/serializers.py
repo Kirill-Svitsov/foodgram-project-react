@@ -59,7 +59,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     ingredients = serializers.ListField(
         child=serializers.DictField(
-            child=serializers.IntegerField(),  # 'id': ingredient_id
+            child=serializers.IntegerField(),
             required=True
         ),
         write_only=True
@@ -90,11 +90,19 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['author'] = CustomUserSerializer(instance.author, context=self.context).data
-        representation['tags'] = TagSerializer(instance.tags.all(),
-                                               many=True, context=self.context).data
-        representation['ingredients'] = RecipeIngredientSerializer(instance.recipeingredient_set.all(), many=True,
-                                                                   context=self.context).data
+        representation['author'] = CustomUserSerializer(
+            instance.author,
+            context=self.context
+        ).data
+        representation['tags'] = TagSerializer(
+            instance.tags.all(),
+            many=True,
+            context=self.context
+        ).data
+        representation['ingredients'] = RecipeIngredientSerializer(
+            instance.recipeingredient_set.all(),
+            many=True,
+            context=self.context).data
         return representation
 
 
@@ -108,3 +116,34 @@ class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
         fields = '__all__'
+
+
+class SubscribedAuthorsSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source='author.email')
+    username = serializers.CharField(source='author.username')
+    first_name = serializers.CharField(source='author.first_name')
+    last_name = serializers.CharField(source='author.last_name')
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Follow
+        fields = (
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'is_subscribed',
+            'recipes', 'recipes_count')
+
+    def get_is_subscribed(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return user.following.filter(author=obj.author).exists()
+        return False
+
+    def get_recipes(self, obj):
+        recipes = obj.author.recipes.all()[:1]  # Первый рецепт в примере
+        return RecipeSerializer(recipes, many=True, context=self.context).data
+
+    def get_recipes_count(self, obj):
+        return obj.author.recipes.count()
+
