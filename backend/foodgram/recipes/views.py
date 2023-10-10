@@ -22,7 +22,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=False, methods=['get'], url_path='me')
     def check_me(self, request, *args, **kwargs):
-        user = self.request.user
+        user = request.user
         if not user.is_authenticated:
             return Response({'detail': 'Authentication credentials were not provided.'},
                             status=status.HTTP_401_UNAUTHORIZED)
