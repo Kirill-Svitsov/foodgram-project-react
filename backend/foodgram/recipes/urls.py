@@ -12,6 +12,7 @@ router.register(r'users/<pk>/subscribe', CustomUserViewSet, basename='subscribe'
 router.register(r'users/set_password', CustomUserViewSet, basename='set_password')
 router.register(r'shopping-list', ShoppingListViewSet, basename='shopping-list')
 
+
 urlpatterns = [
     path("", include(router.urls)),
     path("auth/", include("djoser.urls.authtoken"))

@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.text import slugify
@@ -103,6 +104,7 @@ class Recipe(models.Model):
         default=False,
         verbose_name='В списке покупок'
     )
+    pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
 
     def get_image_url(self):
         return self.image.url if self.image else None
@@ -122,10 +124,9 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
     )
-    amount = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
-        verbose_name='Количество'
+    amount = models.PositiveIntegerField(
+        "Количество",
+        validators=[MinValueValidator(1, "Количество не может быть меньше 1")],
     )
 
     def __str__(self):

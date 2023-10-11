@@ -8,6 +8,7 @@ from djoser.views import UserViewSet
 
 from django.http import HttpResponse
 
+from .utils import generate_csv
 from .permissions import *
 from .models import *
 from .serializers import *
@@ -119,6 +120,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthorOrReadOnly]
     pagination_class = CustomPageNumberPagination
+    ordering = ['-pub_date']
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -138,25 +140,50 @@ class RecipeViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
             headers=headers)
 
-    @action(detail=True, methods=['post'])
-    def shopping_cart(self, request):
+    @action(
+        detail=True,
+        methods=("POST", "DELETE"),
+        permission_classes=(IsAuthenticated,),
+        url_path='shopping_cart',
+    )
+    def shopping_cart(self, request, **kwargs):
         recipe = self.get_object()
-        shopping_list, created = ShoppingList.objects.get_or_create(
+        in_shopping_list = ShoppingList.objects.filter(
             user=request.user,
             recipe=recipe
-        )
+        ).exists()
+        if request.method == "POST":
+            if not in_shopping_list:
+                obj = ShoppingList.objects.create(
+                    user=request.user, recipe=recipe)
+                serializer = ShoppingListSerializer(
+                    obj, context={"request": request}
+                )
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return Response(
+                    {"detail": "This recipe already in your shopping list."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if not in_shopping_list:
+            return Response(
+                {"detail": "This recipe not in your shopping list."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ShoppingList.objects.filter(user=request.user, recipe=recipe).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-        serializer = ShoppingListSerializer(shopping_list)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # serializer = ShoppingListSerializer(shopping_list)
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['get'])
-    def download_shopping_cart(self, request):
+    @action(detail=False, methods=['get'], url_path='download_shopping_cart')
+    def download_shopping_cart(self, request, **kwargs):
         shopping_list = ShoppingList.objects.filter(user=request.user)
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="shopping_cart.csv"'
-
         generate_csv(shopping_list, response)
-
         return response
 
     @action(

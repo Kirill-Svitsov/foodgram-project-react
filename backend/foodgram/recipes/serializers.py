@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 from djoser.serializers import UserSerializer
 from djoser.serializers import UserCreateSerializer
@@ -107,9 +109,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='recipe.id')
+    name = serializers.CharField(source='recipe.name')
+    image = serializers.ImageField(source='recipe.image')
+    cooking_time = serializers.IntegerField(source='recipe.cooking_time')
+
     class Meta:
         model = ShoppingList
-        fields = '__all__'
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -141,9 +148,8 @@ class SubscribedAuthorsSerializer(serializers.ModelSerializer):
         return False
 
     def get_recipes(self, obj):
-        recipes = obj.author.recipes.all()[:1]  # Первый рецепт в примере
+        recipes = obj.author.recipes.all()[:1]
         return RecipeSerializer(recipes, many=True, context=self.context).data
 
     def get_recipes_count(self, obj):
         return obj.author.recipes.count()
-
