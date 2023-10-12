@@ -66,7 +66,7 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB', 'django') if USE_SQLITE is None else 'sqlite_db',
         'USER': os.getenv('POSTGRES_USER', 'django') if USE_SQLITE is None else '',
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', '') if USE_SQLITE is None else '',
-        'HOST': os.getenv('DB_HOST', '') if USE_SQLITE is None else '',
+        'HOST': os.getenv('DB_HOST', 'db') if USE_SQLITE is None else '',
         'PORT': os.getenv('DB_PORT', 5432) if USE_SQLITE is None else '',
     }
 }

@@ -1,6 +1,7 @@
 from django.core.validators import RegexValidator
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
+from drf_extra_fields.fields import Base64ImageField
 
 from users.models import CustomUser, Follow
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -72,6 +73,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(),
         many=True
     )
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
