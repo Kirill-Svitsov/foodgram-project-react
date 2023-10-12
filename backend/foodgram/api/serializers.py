@@ -1,13 +1,10 @@
-from rest_framework import serializers
-from djoser.serializers import UserSerializer
-from djoser.serializers import UserCreateSerializer
 from django.core.validators import RegexValidator
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from rest_framework import serializers
 
-from recipes.models import (
-    Tag, Ingredient, Recipe,
-    RecipeIngredient, Favorite, ShoppingList
-)
 from users.models import CustomUser, Follow
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingList, Tag)
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):

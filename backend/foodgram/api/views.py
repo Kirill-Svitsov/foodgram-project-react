@@ -1,29 +1,21 @@
-from rest_framework import viewsets
-from rest_framework import status
+from django.contrib.auth.hashers import check_password
+from django.http import HttpResponse
+from djoser.views import UserViewSet
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.contrib.auth.hashers import check_password
-from djoser.views import UserViewSet
 
-from django.http import HttpResponse
-
-from .permissions import (
-    IsAuthorOrReadOnly,
-    IsReadOnly, AllowAnyForCreate
-)
-from recipes.models import (
-    ShoppingList, Ingredient, Recipe,
-    RecipeIngredient, Tag, Favorite
-)
-from users.models import Follow, CustomUser
-from .serializers import (
-    CustomUserSerializer, TagSerializer,
-    IngredientSerializer, RecipeIngredientSerializer, RecipeSerializer,
-    ShoppingListSerializer, SubscribedAuthorsSerializer
-)
-from .pagination import CustomPageNumberPagination
-from .generate_shopping_list import generate_csv
+from users.models import CustomUser, Follow
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingList, Tag)
+from api.generate_shopping_list import generate_csv
+from api.pagination import CustomPageNumberPagination
+from api.permissions import AllowAnyForCreate, IsAuthorOrReadOnly, IsReadOnly
+from api.serializers import (CustomUserSerializer, IngredientSerializer,
+                             RecipeIngredientSerializer, RecipeSerializer,
+                             ShoppingListSerializer, SubscribedAuthorsSerializer,
+                             TagSerializer)
 
 
 class CustomUserViewSet(UserViewSet):

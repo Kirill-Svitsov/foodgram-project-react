@@ -1,6 +1,6 @@
-from django.http import request
-
 import csv
+
+from django.http import request
 
 
 def generate_csv(shopping_list, response):
