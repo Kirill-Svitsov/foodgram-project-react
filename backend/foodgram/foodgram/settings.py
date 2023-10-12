@@ -1,5 +1,9 @@
-from datetime import timedelta
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -8,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-w1(cqgr!n$l&u49*n*5533c_&&(k970d_o+*kh)u)xmmk&4$9h'
+SECRET_KEY = os.getenv('SECRET_KEY', 'secret_key_name')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -74,28 +78,41 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+PASSWORD_VALIDATION_USER = (
+    'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+)
+
+PASSWORD_VALIDATION_MINIMUM = (
+    'django.contrib.auth.password_validation.MinimumLengthValidator'
+)
+PASSWORD_VALIDATION_COMMON = (
+    'django.contrib.auth.password_validation.CommonPasswordValidator'
+)
+PASSWORD_VALIDATION_NUMERIC = (
+    'django.contrib.auth.password_validation.NumericPasswordValidator'
+)
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': PASSWORD_VALIDATION_USER,
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': PASSWORD_VALIDATION_MINIMUM,
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': PASSWORD_VALIDATION_COMMON,
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': PASSWORD_VALIDATION_NUMERIC,
     },
 ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 

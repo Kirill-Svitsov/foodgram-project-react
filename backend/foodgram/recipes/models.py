@@ -3,7 +3,6 @@ import re
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-# from django.contrib.auth.models import AbstractUser
 from django.utils.text import slugify
 from django.db.models import UniqueConstraint
 
@@ -117,7 +116,10 @@ class Recipe(models.Model):
         default=False,
         verbose_name='В списке покупок'
     )
-    pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации'
+    )
 
     class Meta:
         ordering = ["-pub_date"]
@@ -162,7 +164,9 @@ class RecipeIngredient(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.ingredient.name} ({self.amount} {self.ingredient.measurement_unit})"
+        return (f"{self.ingredient.name}"
+                f" ({self.amount} "
+                f"{self.ingredient.measurement_unit})")
 
 
 class Favorite(models.Model):
@@ -202,20 +206,3 @@ class ShoppingList(models.Model):
 
     def __str__(self):
         return f"{self.user.username} -> {self.recipe.name}"
-
-# class Follow(models.Model):
-#     user = models.ForeignKey(
-#         CustomUser,
-#         on_delete=models.CASCADE,
-#         related_name='following',
-#         verbose_name='Подписчик'
-#     )
-#     author = models.ForeignKey(
-#         CustomUser,
-#         on_delete=models.CASCADE,
-#         related_name='followers',
-#         verbose_name='Автор'
-#     )
-#
-#     def __str__(self):
-#         return f"{self.user.username} -> {self.author.username}"

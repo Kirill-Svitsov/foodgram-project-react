@@ -3,7 +3,10 @@ from djoser.serializers import UserSerializer
 from djoser.serializers import UserCreateSerializer
 from django.core.validators import RegexValidator
 
-from recipes.models import *
+from recipes.models import (
+    Tag, Ingredient, Recipe,
+    RecipeIngredient, Favorite, ShoppingList
+)
 from users.models import CustomUser, Follow
 
 
@@ -36,7 +39,10 @@ class CustomUserSerializer(UserSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed')
+        fields = (
+            'email', 'id', 'username',
+            'first_name', 'last_name', 'is_subscribed'
+        )
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -65,7 +71,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         ),
         write_only=True
     )
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True
+    )
 
     class Meta:
         model = Recipe
@@ -106,11 +115,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             context=self.context
         ).data
 
-        if 'request' in self.context and self.context['request'].user.is_authenticated:
-            representation['is_favorited'] = Favorite.objects.filter(user=self.context['request'].user,
-                                                                     recipe=instance).exists()
-            representation['is_in_shopping_cart'] = ShoppingList.objects.filter(user=self.context['request'].user,
-                                                                                recipe=instance).exists()
+        if 'request' in self.context\
+                and self.context['request'].user.is_authenticated:
+            representation['is_favorited'] = Favorite.objects.filter(
+                user=self.context['request'].user,
+                recipe=instance).exists()
+            representation['is_in_shopping_cart'] = \
+                ShoppingList.objects.filter(
+                user=self.context['request'].user,
+                recipe=instance).exists()
         else:
             representation['is_favorited'] = False
             representation['is_in_shopping_cart'] = False
@@ -158,8 +171,14 @@ class SubscribedAuthorsSerializer(serializers.ModelSerializer):
         return False
 
     def get_recipes(self, obj):
-        recipes = obj.author.recipes.all()[:1]
-        return RecipeSerializer(recipes, many=True, context=self.context).data
+        recipes_limit = self.context.get(
+            "request").query_params.get("recipes_limit")
+        recipes = obj.author.recipes.all()[: int(recipes_limit)]
+        return RecipeSerializer(
+            recipes,
+            many=True,
+            context=self.context
+        ).data
 
     def get_recipes_count(self, obj):
         return obj.author.recipes.count()

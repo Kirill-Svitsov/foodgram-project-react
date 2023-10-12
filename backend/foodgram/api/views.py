@@ -8,11 +8,20 @@ from djoser.views import UserViewSet
 
 from django.http import HttpResponse
 
-from .utils import generate_csv
-from .permissions import *
-from recipes.models import ShoppingList, Ingredient, Recipe, RecipeIngredient, Tag
+from .permissions import (
+    IsAuthorOrReadOnly,
+    IsReadOnly, AllowAnyForCreate
+)
+from recipes.models import (
+    ShoppingList, Ingredient, Recipe,
+    RecipeIngredient, Tag, Favorite
+)
 from users.models import Follow, CustomUser
-from .serializers import *
+from .serializers import (
+    CustomUserSerializer, TagSerializer,
+    IngredientSerializer, RecipeIngredientSerializer, RecipeSerializer,
+    ShoppingListSerializer, SubscribedAuthorsSerializer
+)
 from .pagination import CustomPageNumberPagination
 from .generate_shopping_list import generate_csv
 
@@ -27,8 +36,10 @@ class CustomUserViewSet(UserViewSet):
     def check_me(self, request, *args, **kwargs):
         user = request.user
         if not user.is_authenticated:
-            return Response({'detail': 'Authentication credentials were not provided.'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'detail': 'Authentication credentials were not provided.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
         serializer = self.get_serializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -36,23 +47,33 @@ class CustomUserViewSet(UserViewSet):
     def set_password(self, request, *args, **kwargs):
         user = self.request.user
         if not user.is_authenticated:
-            return Response({'detail': 'Authentication credentials were not provided.'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'detail': 'Authentication credentials were not provided.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         current_password = request.data.get('current_password')
         new_password = request.data.get('new_password')
 
         if not current_password or not new_password:
-            return Response({'detail': 'Both current_password and new_password are required.'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'detail': 'Current_password and new_password are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         if not check_password(current_password, user.password):
-            return Response({'detail': 'Invalid current password.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'detail': 'Invalid current password.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         user.set_password(new_password)
         user.save()
 
-        return Response({'detail': 'Password changed successfully.'}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'detail': 'Password changed successfully.'},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     @action(
         detail=False,
@@ -63,8 +84,15 @@ class CustomUserViewSet(UserViewSet):
     def get_subscriptions(self, request):
         subscriptions = Follow.objects.filter(user=request.user)
         paginator = self.pagination_class()
-        result_page = paginator.paginate_queryset(subscriptions, request)
-        serializer = SubscribedAuthorsSerializer(result_page, many=True, context={'request': request})
+        result_page = paginator.paginate_queryset(
+            subscriptions,
+            request
+        )
+        serializer = SubscribedAuthorsSerializer(
+            result_page,
+            many=True,
+            context={'request': request}
+        )
         return paginator.get_paginated_response(serializer.data)
 
     @action(
@@ -179,14 +207,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ShoppingList.objects.filter(user=request.user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-        # serializer = ShoppingListSerializer(shopping_list)
-        # return Response(serializer.data, status=status.HTTP_201_CREATED)
-
     @action(detail=False, methods=['get'], url_path='download_shopping_cart')
     def download_shopping_cart(self, request, **kwargs):
         shopping_list = ShoppingList.objects.filter(user=request.user)
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="shopping_cart.csv"'
+        response['Content-Disposition'] = (
+            'attachment; filename="shopping_cart.csv"'
+        )
         generate_csv(shopping_list, response)
         return response
 
@@ -215,7 +242,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 )
         elif request.method == 'DELETE':
             try:
-                favorite = Favorite.objects.get(user=request.user, recipe=recipe)
+                favorite = Favorite.objects.get(
+                    user=request.user,
+                    recipe=recipe
+                )
                 favorite.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Favorite.DoesNotExist:

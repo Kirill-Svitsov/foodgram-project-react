@@ -24,12 +24,12 @@ class IsReadOnly(permissions.BasePermission):
         return request.method in permissions.SAFE_METHODS
 
 
-class IsUserOrReadOnly(permissions.BasePermission):
-    """
-    Позволяет редактировать свой собственный профиль,
-     но предотвращает редактирование других пользователей.
-    """
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return obj == request.user
+# class IsUserOrReadOnly(permissions.BasePermission):
+#     """
+#     Позволяет редактировать свой собственный профиль,
+#      но предотвращает редактирование других пользователей.
+#     """
+#     def has_object_permission(self, request, view, obj):
+#         if request.method in permissions.SAFE_METHODS:
+#             return True
+#         return obj == request.user
