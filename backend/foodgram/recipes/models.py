@@ -1,31 +1,21 @@
+import re
+
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+# from django.contrib.auth.models import AbstractUser
 from django.utils.text import slugify
+from django.db.models import UniqueConstraint
+
+from users.models import CustomUser
 
 
-class CustomUser(AbstractUser):
-    email = models.EmailField(
-        unique=True,
-        max_length=254,
-        verbose_name='Адрес электронной почты'
-    )
-    username = models.CharField(
-        max_length=150,
-        unique=True,
-        verbose_name='Имя пользователя'
-    )
-    first_name = models.CharField(
-        max_length=150,
-        verbose_name='Имя'
-    )
-    last_name = models.CharField(
-        max_length=150,
-        verbose_name='Фамилия'
-    )
-
-    def __str__(self):
-        return self.username
+def validate_hex_color(value):
+    pattern = r"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+    if not re.match(pattern, value):
+        raise ValidationError(
+            "Неверный формат ввода. Цвет должен быть в HEX формате: #FFFFFF"
+        )
 
 
 class Tag(models.Model):
@@ -35,7 +25,9 @@ class Tag(models.Model):
     )
     color = models.CharField(
         max_length=7,
-        verbose_name='Цвет'
+        unique=True,
+        validators=[validate_hex_color],
+        verbose_name="Цвет",
     )
     slug = models.SlugField(
         unique=True,
@@ -43,13 +35,24 @@ class Tag(models.Model):
         verbose_name='Слаг'
     )
 
+    class Meta:
+        ordering = ["id"]
+        verbose_name = "Тег"
+        verbose_name_plural = "Теги"
+        constraints = [
+            UniqueConstraint(
+                fields=[
+                    "name",
+                    "slug"],
+                name="unique_tag")]
+
+    def __str__(self):
+        return str(self.name)
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
 
 
 class Ingredient(models.Model):
@@ -62,8 +65,18 @@ class Ingredient(models.Model):
         verbose_name='Единицы измерения'
     )
 
+    class Meta:
+        ordering = ["id"]
+        verbose_name = "Ингредиент"
+        verbose_name_plural = "Ингредиенты"
+        constraints = [
+            UniqueConstraint(
+                fields=["name", "measurement_unit"], name="unique_ingredient"
+            )
+        ]
+
     def __str__(self):
-        return self.name
+        return str(self.name) + " " + str(self.measurement_unit)
 
 
 class Recipe(models.Model):
@@ -106,11 +119,19 @@ class Recipe(models.Model):
     )
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
 
-    def get_image_url(self):
-        return self.image.url if self.image else None
+    class Meta:
+        ordering = ["-pub_date"]
+        verbose_name = "Рецепт"
+        verbose_name_plural = "Рецепты"
+        constraints = [
+            UniqueConstraint(fields=["name", "author"], name="unique_recipe"),
+        ]
 
     def __str__(self):
-        return self.name
+        return str(self.name)
+
+    def get_image_url(self):
+        return self.image.url if self.image else None
 
 
 class RecipeIngredient(models.Model):
@@ -129,12 +150,19 @@ class RecipeIngredient(models.Model):
         validators=[MinValueValidator(1, "Количество не может быть меньше 1")],
     )
 
+    class Meta:
+        ordering = ["id"]
+        verbose_name = "Количество ингредиента в рецепте"
+        constraints = [
+            UniqueConstraint(
+                fields=[
+                    "recipe",
+                    "ingredient"],
+                name="unique_recipe_ingredient"),
+        ]
+
     def __str__(self):
         return f"{self.ingredient.name} ({self.amount} {self.ingredient.measurement_unit})"
-
-    class Meta:
-        verbose_name = 'Ингредиент рецепта'
-        verbose_name_plural = 'Ингредиенты рецепта'
 
 
 class Favorite(models.Model):
@@ -167,23 +195,27 @@ class ShoppingList(models.Model):
         verbose_name='Рецепт'
     )
 
+    class Meta:
+        ordering = ["id"]
+        verbose_name = "Список покупок"
+        verbose_name_plural = "Список покупок"
+
     def __str__(self):
         return f"{self.user.username} -> {self.recipe.name}"
 
-
-class Follow(models.Model):
-    user = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='Подписчик'
-    )
-    author = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name='followers',
-        verbose_name='Автор'
-    )
-
-    def __str__(self):
-        return f"{self.user.username} -> {self.author.username}"
+# class Follow(models.Model):
+#     user = models.ForeignKey(
+#         CustomUser,
+#         on_delete=models.CASCADE,
+#         related_name='following',
+#         verbose_name='Подписчик'
+#     )
+#     author = models.ForeignKey(
+#         CustomUser,
+#         on_delete=models.CASCADE,
+#         related_name='followers',
+#         verbose_name='Автор'
+#     )
+#
+#     def __str__(self):
+#         return f"{self.user.username} -> {self.author.username}"

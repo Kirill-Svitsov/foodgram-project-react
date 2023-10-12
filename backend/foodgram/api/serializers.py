@@ -1,11 +1,10 @@
-from decimal import Decimal
-
 from rest_framework import serializers
 from djoser.serializers import UserSerializer
 from djoser.serializers import UserCreateSerializer
 from django.core.validators import RegexValidator
 
-from .models import *
+from recipes.models import *
+from users.models import CustomUser, Follow
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -70,7 +69,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = '__all__'
+        exclude = ['pub_date']
         read_only_fields = ('author',)
 
     def create(self, validated_data):
@@ -104,7 +103,18 @@ class RecipeSerializer(serializers.ModelSerializer):
         representation['ingredients'] = RecipeIngredientSerializer(
             instance.recipeingredient_set.all(),
             many=True,
-            context=self.context).data
+            context=self.context
+        ).data
+
+        if 'request' in self.context and self.context['request'].user.is_authenticated:
+            representation['is_favorited'] = Favorite.objects.filter(user=self.context['request'].user,
+                                                                     recipe=instance).exists()
+            representation['is_in_shopping_cart'] = ShoppingList.objects.filter(user=self.context['request'].user,
+                                                                                recipe=instance).exists()
+        else:
+            representation['is_favorited'] = False
+            representation['is_in_shopping_cart'] = False
+
         return representation
 
 

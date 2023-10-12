@@ -5,7 +5,6 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
     """
     Позволяет редактировать рецепты только их авторам.
     """
-
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
@@ -14,7 +13,8 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
 
 class AllowAnyForCreate(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action == 'create' or request.method in permissions.SAFE_METHODS:
+        if view.action == 'create' \
+                or request.method in permissions.SAFE_METHODS:
             return True
         return request.user and request.user.is_authenticated
 
@@ -26,10 +26,9 @@ class IsReadOnly(permissions.BasePermission):
 
 class IsUserOrReadOnly(permissions.BasePermission):
     """
-    Позволяет редактировать свой собственный профиль, но предотвращает редактирование
-    других пользователей.
+    Позволяет редактировать свой собственный профиль,
+     но предотвращает редактирование других пользователей.
     """
-
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True

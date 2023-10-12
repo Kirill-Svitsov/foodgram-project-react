@@ -10,7 +10,8 @@ from django.http import HttpResponse
 
 from .utils import generate_csv
 from .permissions import *
-from .models import *
+from recipes.models import ShoppingList, Ingredient, Recipe, RecipeIngredient, Tag
+from users.models import Follow, CustomUser
 from .serializers import *
 from .pagination import CustomPageNumberPagination
 from .generate_shopping_list import generate_csv
@@ -20,6 +21,7 @@ class CustomUserViewSet(UserViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [AllowAnyForCreate, ]
+    pagination_class = CustomPageNumberPagination
 
     @action(detail=False, methods=['get'], url_path='me')
     def check_me(self, request, *args, **kwargs):
@@ -56,12 +58,14 @@ class CustomUserViewSet(UserViewSet):
         detail=False,
         methods=['get'],
         url_path='subscriptions',
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated],
     )
     def get_subscriptions(self, request):
         subscriptions = Follow.objects.filter(user=request.user)
-        serializer = SubscribedAuthorsSerializer(subscriptions, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = self.pagination_class()
+        result_page = paginator.paginate_queryset(subscriptions, request)
+        serializer = SubscribedAuthorsSerializer(result_page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
 
     @action(
         detail=True,

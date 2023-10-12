@@ -1,6 +1,6 @@
 import csv
 
-from .models import Ingredient
+from recipes.models import Ingredient
 
 
 def generate_csv(shopping_list, response):
