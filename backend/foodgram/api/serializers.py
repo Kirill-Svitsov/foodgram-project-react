@@ -1,11 +1,39 @@
+# import base64
+import webcolors
+from drf_extra_fields.fields import Base64ImageField
+# from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from drf_extra_fields.fields import Base64ImageField
 
+from recipes.models import (
+    Favorite, Ingredient, Recipe,
+    RecipeIngredient, ShoppingList, Tag
+)
 from users.models import CustomUser, Follow
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingList, Tag)
+
+
+class Hex2NameColor(serializers.Field):
+    def to_representation(self, value):
+        return value
+
+    def to_internal_value(self, data):
+        try:
+            data = webcolors.hex_to_name(data)
+        except ValueError:
+            raise serializers.ValidationError('Для этого цвета нет имени')
+        return data
+
+
+# class Base64ImageField(serializers.ImageField):
+#     def to_internal_value(self, data):
+#         if isinstance(data, str) and data.startswith('data:image'):
+#             format, imgstr = data.split(';base64,')
+#             ext = format.split('/')[-1]
+#
+#             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+#
+#         return super().to_internal_value(data)
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -44,6 +72,8 @@ class CustomUserSerializer(UserSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    color = Hex2NameColor()
+
     class Meta:
         model = Tag
         fields = '__all__'
@@ -73,12 +103,22 @@ class RecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(),
         many=True
     )
+    # image = Base64ImageField(required=False, allow_null=True)
     image = Base64ImageField()
+    image_url = serializers.SerializerMethodField(
+        'get_image_url',
+        read_only=True,
+    )
 
     class Meta:
         model = Recipe
         exclude = ['pub_date']
         read_only_fields = ('author',)
+
+    def get_image_url(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
@@ -86,7 +126,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
 
         for ingredient_data in ingredients_data:
-            ingredient_id = ingredient_data['id']
+            ingredient_id = ingredient_data['ingredient']
             amount = ingredient_data['amount']
             RecipeIngredient.objects.create(
                 recipe=recipe,
@@ -114,15 +154,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             context=self.context
         ).data
 
-        if 'request' in self.context\
+        if 'request' in self.context \
                 and self.context['request'].user.is_authenticated:
             representation['is_favorited'] = Favorite.objects.filter(
                 user=self.context['request'].user,
                 recipe=instance).exists()
             representation['is_in_shopping_cart'] = \
                 ShoppingList.objects.filter(
-                user=self.context['request'].user,
-                recipe=instance).exists()
+                    user=self.context['request'].user,
+                    recipe=instance).exists()
         else:
             representation['is_favorited'] = False
             representation['is_in_shopping_cart'] = False

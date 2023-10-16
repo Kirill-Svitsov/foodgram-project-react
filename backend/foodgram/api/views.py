@@ -14,7 +14,8 @@ from api.pagination import CustomPageNumberPagination
 from api.permissions import AllowAnyForCreate, IsAuthorOrReadOnly, IsReadOnly
 from api.serializers import (CustomUserSerializer, IngredientSerializer,
                              RecipeIngredientSerializer, RecipeSerializer,
-                             ShoppingListSerializer, SubscribedAuthorsSerializer,
+                             ShoppingListSerializer,
+                             SubscribedAuthorsSerializer,
                              TagSerializer)
 
 
