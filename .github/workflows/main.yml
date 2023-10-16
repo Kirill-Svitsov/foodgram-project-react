@@ -13,14 +13,14 @@ jobs:
 
     steps:
     # Копируем код проекта
-#    - name: Check out code
-#      uses: actions/checkout@v3
+    - name: Check out code
+      uses: actions/checkout@v3
     # Устанавливаем Python с помощью action
     - name: Set up Python
       uses: actions/setup-python@v4
     # В action setup-python@v4 передаём параметр — версию Python
       with:
-        python-version: 3.10
+        python-version: 3.9
     # Обновляем pip, устанавливаем flake8 и flake8-isort,
     # устанавливаем зависимости проекта
     - name: Install dependencies
