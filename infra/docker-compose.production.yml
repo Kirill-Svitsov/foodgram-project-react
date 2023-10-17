@@ -27,7 +27,7 @@ services:
     image: svitsov/foodgram_frontend
     command: cp -r /app/build/. /static/
     volumes:
-      - static:/static
+      - static:/app/result_build/build
 
   nginx:
     image: svitsov/foodgram_gateway
