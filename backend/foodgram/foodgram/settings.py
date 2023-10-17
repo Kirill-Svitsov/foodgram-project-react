@@ -19,7 +19,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://51.250.100.142',
     'https://*.127.0.0.1',
     'http://localhost',
-    'https://*.svitsovdiplom.hopto.org',
+    'https://svitsovdiplom.hopto.org',
     'http://localhost:7000'
 ]
 
