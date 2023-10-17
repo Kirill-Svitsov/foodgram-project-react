@@ -13,6 +13,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'secret_key_name')
 
 # DEBUG = os.getenv('DEBUG') == 'True'
 DEBUG = True
+
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1').split()
 
 INSTALLED_APPS = [
@@ -63,7 +64,7 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql' if USE_SQLITE is None else 'django.db.backends.sqlite3',
-        'NAME': os.getenv('POSTGRES_DB', 'django') if USE_SQLITE is None else 'sqlite_db',
+        'NAME': os.getenv('POSTGRES_DB', 'django') if USE_SQLITE is None else 'sqlite_db.bak',
         'USER': os.getenv('POSTGRES_USER', 'django') if USE_SQLITE is None else '',
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', '') if USE_SQLITE is None else '',
         'HOST': os.getenv('DB_HOST', 'db') if USE_SQLITE is None else '',
