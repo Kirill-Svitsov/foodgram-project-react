@@ -5,6 +5,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
     """
     Позволяет редактировать рецепты только их авторам.
     """
+
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
@@ -27,5 +28,3 @@ class IsReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return self.has_permission(request, view)
-
-
