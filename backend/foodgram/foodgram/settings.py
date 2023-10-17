@@ -15,7 +15,13 @@ DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1').split()
 
-CSRF_TRUSTED_ORIGINS = ['https://51.250.100.142', '127.0.0.1', 'localhost', 'svitsovdiplom.hopto.org']
+CSRF_TRUSTED_ORIGINS = [
+    'https://51.250.100.142',
+    'https://*.127.0.0.1',
+    'http://localhost',
+    'https://*.svitsovdiplom.hopto.org',
+    'http://localhost:7000'
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
