@@ -148,7 +148,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             many=True,
             context=self.context
         ).data
-        representation['ingredients'] = RecipeIngredientSerializer(
+        representation['ingredients'] = IngredientSerializer(
             instance.recipeingredient_set.all(),
             many=True,
             context=self.context
