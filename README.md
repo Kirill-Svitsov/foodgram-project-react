@@ -42,3 +42,8 @@ http://localhost/api/users/subscriptions/
 ```
 http://localhost/api/ingredients/
 ```
+Суперюзер:
+```
+Логин: Svitsov
+Пароль: cuprumelement29
+```
