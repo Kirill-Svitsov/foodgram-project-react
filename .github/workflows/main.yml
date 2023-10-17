@@ -1,5 +1,5 @@
 name: Main foodgram workflow
-#test 4
+#test cleaned server
 
 on:
   push:
