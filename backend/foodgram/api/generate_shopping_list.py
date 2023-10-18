@@ -1,27 +1,7 @@
-import csv
-
-from django.http import request
-
-
-def generate_csv(shopping_list, response):
-    headers = [
-        'Название',
-        'Изображение',
-        'Время приготовления (в минутах)',
-        'Ингредиенты',
-        'Описание'
-    ]
-    writer = csv.writer(response)
-    writer.writerow(headers)
+def generate_shopping_list(shopping_list):
     ingredients_dict = {}
     for item in shopping_list:
         recipe = item.recipe
-        name = recipe.name
-        image_url = request.build_absolute_uri(
-            recipe.get_image_url()
-        ) if recipe.image else ''
-        cooking_time = recipe.cooking_time
-        description = recipe.text
         for ri in recipe.recipeingredient_set.all():
             ingredient_name = ri.ingredient.name
             ingredient_unit = ri.ingredient.measurement_unit
@@ -30,8 +10,15 @@ def generate_csv(shopping_list, response):
                 ingredients_dict[(ingredient_name, ingredient_unit)] += amount
             else:
                 ingredients_dict[(ingredient_name, ingredient_unit)] = amount
-        writer.writerow([name, image_url, cooking_time, description])
+
+    shopping_list_text = "Вы выбрали следующие рецепты:\n\n"
+    for item in shopping_list:
+        shopping_list_text += f"- {item.recipe.name}\n"
+
+    shopping_list_text += "\nСписок покупок:\n\n"
     for (ingredient_name, ingredient_unit), amount in ingredients_dict.items():
-        writer.writerow(
-            ['* ' f"{ingredient_name} ({amount} {ingredient_unit})", '']
-        )
+        shopping_list_text += f"{ingredient_name} ({amount} {ingredient_unit})\n"
+
+    shopping_list_text += "\nПриятного аппетита!"
+
+    return shopping_list_text

@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.filters import RecipeFilter, IngredientFilter
-from api.generate_shopping_list import generate_csv
+from api.generate_shopping_list import generate_shopping_list
 from api.pagination import CustomPageNumberPagination
 from api.permissions import AllowAnyForCreate, IsAuthorOrReadOnly, IsReadOnly
 from api.serializers import (CustomUserSerializer, IngredientSerializer,
@@ -213,7 +213,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = (
             'attachment; filename="shopping_cart.csv"'
         )
-        generate_csv(shopping_list, response)
+        generate_shopping_list(shopping_list, response)
         return response
 
     @action(
