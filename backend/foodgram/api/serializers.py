@@ -113,7 +113,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
 
         for ingredient_data in ingredients_data:
-            ingredient_id = ingredient_data['ingredient']
+            ingredient_id = ingredient_data['id']
             amount = ingredient_data['amount']
             RecipeIngredient.objects.create(
                 recipe=recipe,
