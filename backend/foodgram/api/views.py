@@ -16,7 +16,7 @@ from api.serializers import (CustomUserSerializer, IngredientSerializer,
                              RecipeIngredientSerializer, RecipeSerializer,
                              ShoppingListSerializer,
                              SubscribedAuthorsSerializer,
-                             TagSerializer)
+                             TagSerializer, RecipeIngredientDetailSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -246,6 +246,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     {"detail": "Recipe is not in favorites."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        ingredients_data = request.data.get('ingredients')
+        for ingredient_data in ingredients_data:
+            ingredient_id = ingredient_data['id']
+            amount = ingredient_data['amount']
+            recipe_ingredient = RecipeIngredient.objects.get(
+                recipe=instance,
+                ingredient_id=ingredient_id
+            )
+            recipe_ingredient.amount = amount
+            recipe_ingredient.save()
+        serializer = RecipeIngredientDetailSerializer(
+            instance.recipeingredient_set.all(),
+            many=True,
+            context={"request": request}
+        )
+        return Response(serializer.data)
 
 
 class RecipeIngredientViewSet(viewsets.ModelViewSet):
