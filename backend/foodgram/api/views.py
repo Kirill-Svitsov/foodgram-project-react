@@ -209,11 +209,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='download_shopping_cart')
     def download_shopping_cart(self, request, **kwargs):
         shopping_list = ShoppingList.objects.filter(user=request.user)
-        response = HttpResponse(content_type='text/csv')
+        response = HttpResponse(content_type='text/plain')
         response['Content-Disposition'] = (
-            'attachment; filename="shopping_cart.csv"'
+            'attachment; filename="shopping_cart.txt"'
         )
-        generate_shopping_list(shopping_list, response)
+        shopping_list_text = generate_shopping_list(shopping_list)
+        response.write(shopping_list_text)
+
         return response
 
     @action(
