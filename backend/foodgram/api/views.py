@@ -1,5 +1,5 @@
 from django.contrib.auth.hashers import check_password
-from django_filters.rest_framework import DjangoFilterBackend
+# from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
