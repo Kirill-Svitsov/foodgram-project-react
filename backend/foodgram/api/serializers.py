@@ -111,14 +111,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         many=True
     )
     image = Base64ImageField()
-    image_url = serializers.SerializerMethodField(
-        'get_image_url',
-        read_only=True,
-    )
+    # image_url = serializers.SerializerMethodField(
+    #     'get_image_url',
+    #     read_only=True,
+    # )
 
     class Meta:
         model = Recipe
-        exclude = ['pub_date', 'image_url']
+        exclude = ['pub_date']
         read_only_fields = ('author',)
 
     def get_image_url(self, obj):
