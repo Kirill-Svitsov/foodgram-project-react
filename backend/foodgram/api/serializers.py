@@ -69,7 +69,9 @@ class TagSerializer(serializers.ModelSerializer):
 class IngredientSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='ingredient.id')
     name = serializers.CharField(source='ingredient.name')
-    measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -132,11 +134,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['author'] = CustomUserSerializer(
             instance.author,
-            context=self.context
-        ).data
-        representation['tags'] = TagSerializer(
-            instance.tags.all(),
-            many=True,
             context=self.context
         ).data
         representation['tags'] = [
