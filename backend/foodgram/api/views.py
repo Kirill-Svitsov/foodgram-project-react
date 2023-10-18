@@ -255,23 +255,39 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-    def update(self, request, *args, **kwargs):
+    # def update(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     ingredients_data = request.data.get('ingredients')
+    #     for ingredient_data in ingredients_data:
+    #         ingredient_id = ingredient_data['id']
+    #         amount = ingredient_data['amount']
+    #         recipe_ingredient = RecipeIngredient.objects.get(
+    #             recipe=instance,
+    #             ingredient_id=ingredient_id
+    #         )
+    #         recipe_ingredient.amount = amount
+    #         recipe_ingredient.save()
+    #     serializer = RecipeIngredientDetailSerializer(
+    #         instance.recipeingredient_set.all(),
+    #         many=True,
+    #         context={"request": request}
+    #     )
+    #     return Response(serializer.data)
+    @action(detail=True, methods=['patch'])
+    def update_field(self, request, pk=None):
+        field_name = request.data.get('field_name')
+        field_value = request.data.get('field_value')
         instance = self.get_object()
-        ingredients_data = request.data.get('ingredients')
-        for ingredient_data in ingredients_data:
-            ingredient_id = ingredient_data['id']
-            amount = ingredient_data['amount']
-            recipe_ingredient = RecipeIngredient.objects.get(
-                recipe=instance,
-                ingredient_id=ingredient_id
+        if not field_name:
+            return Response(
+                {'error': 'field_name is required'},
+                status=status.HTTP_400_BAD_REQUEST
             )
-            recipe_ingredient.amount = amount
-            recipe_ingredient.save()
-        serializer = RecipeIngredientDetailSerializer(
-            instance.recipeingredient_set.all(),
-            many=True,
-            context={"request": request}
-        )
+
+        setattr(instance, field_name, field_value)
+        instance.save()
+
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 
