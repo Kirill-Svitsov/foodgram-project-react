@@ -273,22 +273,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
     #         context={"request": request}
     #     )
     #     return Response(serializer.data)
-    @action(detail=True, methods=['patch'])
-    def update_field(self, request, pk=None):
-        field_name = request.data.get('field_name')
-        field_value = request.data.get('field_value')
-        instance = self.get_object()
-        if not field_name:
-            return Response(
-                {'error': 'field_name is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        setattr(instance, field_name, field_value)
-        instance.save()
-
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+    # @action(detail=True, methods=['patch'])
+    # def update_field(self, request, pk=None):
+    #     field_name = request.data.get('field_name')
+    #     field_value = request.data.get('field_value')
+    #     instance = self.get_object()
+    #     if not field_name:
+    #         return Response(
+    #             {'error': 'field_name is required'},
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #
+    #     setattr(instance, field_name, field_value)
+    #     instance.save()
+    #
+    #     serializer = self.get_serializer(instance)
+    #     return Response(serializer.data)
 
 
 class RecipeIngredientViewSet(viewsets.ModelViewSet):
