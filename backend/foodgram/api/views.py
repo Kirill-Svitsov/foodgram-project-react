@@ -1,5 +1,5 @@
 from django.contrib.auth.hashers import check_password
-# from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework as django_filters
 from django.http import HttpResponse
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-# from api.filters import IngredientFilter, RecipeFilter
+from api.filters import RecipeFilter
 from api.generate_shopping_list import generate_csv
 from api.pagination import CustomPageNumberPagination
 from api.permissions import AllowAnyForCreate, IsAuthorOrReadOnly, IsReadOnly
@@ -96,7 +96,7 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=(IsAuthenticated,),
         url_path='subscribe',
     )
-    def manage_following(self, request, **kwargs):
+    def manage_following(self, request, *args, **kwargs):
         user = self.get_object()
         following = Follow.objects.filter(
             user=request.user, author=user
@@ -150,8 +150,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthorOrReadOnly]
     pagination_class = CustomPageNumberPagination
     ordering = ['-pub_date']
-    # filter_backends = (DjangoFilterBackend,)
-    # filterset_class = RecipeFilter
+    filter_backends = (django_filters.DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
