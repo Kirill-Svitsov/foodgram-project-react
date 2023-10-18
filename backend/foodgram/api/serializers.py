@@ -77,7 +77,7 @@ class IngredientDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ('id', 'name', 'measurement_unit')
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
     def get_amount(self, obj):
         request = self.context.get('request')
