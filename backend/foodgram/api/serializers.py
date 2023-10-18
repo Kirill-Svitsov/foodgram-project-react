@@ -67,9 +67,13 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='ingredient.id')
+    name = serializers.CharField(source='ingredient.name')
+    measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
+
     class Meta:
-        model = Ingredient
-        fields = '__all__'
+        model = RecipeIngredient
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -99,7 +103,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        exclude = ['pub_date']
+        exclude = ['pub_date', 'image_url']
         read_only_fields = ('author',)
 
     def get_image_url(self, obj):
@@ -135,6 +139,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             many=True,
             context=self.context
         ).data
+        representation['tags'] = [
+            {
+                "id": tag.id,
+                "name": tag.name,
+                "color": tag.color,
+                "slug": tag.slug
+            }
+            for tag in instance.tags.all()
+        ]
         representation['ingredients'] = RecipeIngredientSerializer(
             instance.recipeingredient_set.all(),
             many=True,
