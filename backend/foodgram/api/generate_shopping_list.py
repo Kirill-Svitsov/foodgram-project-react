@@ -17,7 +17,8 @@ def generate_shopping_list(shopping_list):
 
     shopping_list_text += "\nСписок покупок:\n\n"
     for (ingredient_name, ingredient_unit), amount in ingredients_dict.items():
-        shopping_list_text += f"{ingredient_name} ({amount} {ingredient_unit})\n"
+        shopping_list_text += (f"{ingredient_name} "
+                               f"({amount} {ingredient_unit})\n")
 
     shopping_list_text += "\nПриятного аппетита!"
 
