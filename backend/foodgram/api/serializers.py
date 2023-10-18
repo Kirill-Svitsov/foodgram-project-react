@@ -67,15 +67,29 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.name')
-    measurement_unit = serializers.CharField(
-        source='ingredient.measurement_unit'
-    )
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
+
+
+class IngredientDetailSerializer(serializers.ModelSerializer):
+    amount = serializers.SerializerMethodField()
 
     class Meta:
-        model = RecipeIngredient
-        fields = ('id', 'name', 'measurement_unit', 'amount')
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
+
+    def get_amount(self, obj):
+        request = self.context.get('request')
+        if request:
+            recipe = request.resolver_match.kwargs.get('pk')
+            recipe_ingredient = RecipeIngredient.objects.filter(
+                recipe=recipe,
+                ingredient=obj
+            ).first()
+            if recipe_ingredient:
+                return recipe_ingredient.amount
+        return None
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -96,7 +110,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(),
         many=True
     )
-    # image = Base64ImageField(required=False, allow_null=True)
     image = Base64ImageField()
     image_url = serializers.SerializerMethodField(
         'get_image_url',
@@ -136,16 +149,12 @@ class RecipeSerializer(serializers.ModelSerializer):
             instance.author,
             context=self.context
         ).data
-        representation['tags'] = [
-            {
-                "id": tag.id,
-                "name": tag.name,
-                "color": tag.color,
-                "slug": tag.slug
-            }
-            for tag in instance.tags.all()
-        ]
-        representation['ingredients'] = RecipeIngredientSerializer(
+        representation['tags'] = TagSerializer(
+            instance.tags.all(),
+            many=True,
+            context=self.context
+        ).data
+        representation['ingredients'] = IngredientDetailSerializer(
             instance.recipeingredient_set.all(),
             many=True,
             context=self.context
