@@ -72,24 +72,17 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class IngredientDetailSerializer(serializers.ModelSerializer):
-    amount = serializers.SerializerMethodField()
+class RecipeIngredientDetailSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='ingredient.id')
+    name = serializers.CharField(source='ingredient.name')
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit'
+    )
+    amount = serializers.IntegerField()
 
     class Meta:
-        model = Ingredient
+        model = RecipeIngredient
         fields = ('id', 'name', 'measurement_unit', 'amount')
-
-    def get_amount(self, obj):
-        request = self.context.get('request')
-        if request:
-            recipe = request.resolver_match.kwargs.get('pk')
-            recipe_ingredient = RecipeIngredient.objects.filter(
-                recipe=recipe,
-                ingredient=obj
-            ).first()
-            if recipe_ingredient:
-                return recipe_ingredient.amount
-        return None
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -111,6 +104,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         many=True
     )
     image = Base64ImageField()
+
     # image_url = serializers.SerializerMethodField(
     #     'get_image_url',
     #     read_only=True,
@@ -121,10 +115,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         exclude = ['pub_date']
         read_only_fields = ('author',)
 
-    def get_image_url(self, obj):
-        if obj.image:
-            return obj.image.url
-        return None
+    # def get_image_url(self, obj):
+    #     if obj.image:
+    #         return obj.image.url
+    #     return None
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
@@ -154,12 +148,11 @@ class RecipeSerializer(serializers.ModelSerializer):
             many=True,
             context=self.context
         ).data
-        representation['ingredients'] = IngredientDetailSerializer(
+        representation['ingredients'] = RecipeIngredientDetailSerializer(
             instance.recipeingredient_set.all(),
             many=True,
             context=self.context
         ).data
-
         if 'request' in self.context \
                 and self.context['request'].user.is_authenticated:
             representation['is_favorited'] = Favorite.objects.filter(
