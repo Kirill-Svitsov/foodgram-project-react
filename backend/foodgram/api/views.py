@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import check_password
+from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
@@ -6,9 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from users.models import CustomUser, Follow
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingList, Tag)
+from api.filters import IngredientFilter, RecipeFilter
 from api.generate_shopping_list import generate_csv
 from api.pagination import CustomPageNumberPagination
 from api.permissions import AllowAnyForCreate, IsAuthorOrReadOnly, IsReadOnly
@@ -17,6 +16,9 @@ from api.serializers import (CustomUserSerializer, IngredientSerializer,
                              ShoppingListSerializer,
                              SubscribedAuthorsSerializer,
                              TagSerializer, RecipeIngredientDetailSerializer)
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingList, Tag)
+from users.models import CustomUser, Follow
 
 
 class CustomUserViewSet(UserViewSet):
@@ -138,6 +140,8 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [IsReadOnly]
+    filter_backends = (IngredientFilter,)
+    search_fields = ('^name',)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -146,6 +150,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthorOrReadOnly]
     pagination_class = CustomPageNumberPagination
     ordering = ['-pub_date']
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
