@@ -255,40 +255,33 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-    # def update(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     ingredients_data = request.data.get('ingredients')
-    #     for ingredient_data in ingredients_data:
-    #         ingredient_id = ingredient_data['id']
-    #         amount = ingredient_data['amount']
-    #         recipe_ingredient = RecipeIngredient.objects.get(
-    #             recipe=instance,
-    #             ingredient_id=ingredient_id
-    #         )
-    #         recipe_ingredient.amount = amount
-    #         recipe_ingredient.save()
-    #     serializer = RecipeIngredientDetailSerializer(
-    #         instance.recipeingredient_set.all(),
-    #         many=True,
-    #         context={"request": request}
-    #     )
-    #     return Response(serializer.data)
-    # @action(detail=True, methods=['patch'])
-    # def update_field(self, request, pk=None):
-    #     field_name = request.data.get('field_name')
-    #     field_value = request.data.get('field_value')
-    #     instance = self.get_object()
-    #     if not field_name:
-    #         return Response(
-    #             {'error': 'field_name is required'},
-    #             status=status.HTTP_400_BAD_REQUEST
-    #         )
-    #
-    #     setattr(instance, field_name, field_value)
-    #     instance.save()
-    #
-    #     serializer = self.get_serializer(instance)
-    #     return Response(serializer.data)
+    @action(detail=True, methods=['patch'])
+    def update_recipe(self, request, pk=None):
+        data = request.data
+        recipe = self.get_object()
+        ingredients_data = data.get('ingredients')
+        if ingredients_data:
+            for ingredient_data in ingredients_data:
+                ingredient_id = ingredient_data['id']
+                amount = ingredient_data['amount']
+                recipe_ingredient = RecipeIngredient.objects.get(
+                    recipe=recipe,
+                    ingredient_id=ingredient_id
+                )
+                recipe_ingredient.amount = amount
+                recipe_ingredient.save()
+        tags_data = data.get('tags')
+        if tags_data:
+            recipe.tags.set(tags_data)
+        for field, value in data.items():
+            if field not in ['ingredients', 'tags']:
+                setattr(recipe, field, value)
+        recipe.save()
+        updated_recipe = RecipeSerializer(
+            recipe,
+            context={'request': request}
+        ).data
+        return Response(updated_recipe)
 
 
 class RecipeIngredientViewSet(viewsets.ModelViewSet):
