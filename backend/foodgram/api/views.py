@@ -268,7 +268,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     recipe=recipe,
                     ingredient_id=ingredient_id
                 )
-                recipe_ingredient.amount = amount
+                recipe_ingredient.amount = int(amount)
                 recipe_ingredient.save()
         tags_data = data.get('tags')
         if tags_data:
