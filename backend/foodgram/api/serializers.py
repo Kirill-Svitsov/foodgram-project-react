@@ -1,6 +1,5 @@
 import webcolors
 from drf_extra_fields.fields import Base64ImageField
-from django.db import transaction
 from django.core.validators import RegexValidator
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
@@ -168,25 +167,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             representation['is_in_shopping_cart'] = False
 
         return representation
-
-    def update(self, recipe, validated_data):
-        recipe.ingredients.clear()
-        recipe.tags.clear()
-        ingredients = validated_data.pop("ingredients")
-        tags = validated_data.pop("tags")
-        recipe.tags.set(tags)
-        RecipeIngredient.objects.filter(recipe=recipe).delete()
-        recipe_ingredients = [
-            RecipeIngredient(
-                recipe=recipe,
-                ingredient_id=ingredient.get("id"),
-                amount=ingredient.get("amount"),
-            )
-            for ingredient in ingredients
-        ]
-        with transaction.atomic():
-            RecipeIngredient.objects.bulk_create(recipe_ingredients)
-        return super().update(recipe, validated_data)
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
