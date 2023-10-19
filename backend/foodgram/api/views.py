@@ -263,18 +263,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients_data = data.get('ingredients')
         if ingredients_data:
             for ingredient_data in ingredients_data:
-                ingredient_id = ingredient_data['id']
-                amount = ingredient_data['amount']
-                recipe_ingredient = RecipeIngredient.objects.get(
-                    recipe=recipe,
-                    ingredient_id=ingredient_id
-                )
-                recipe_ingredient.amount = amount
-                recipe_ingredient.save()
+                ingredient_id = ingredient_data.get('id')
+                amount = ingredient_data.get('amount')
+                if ingredient_id and amount is not None:
+                    recipe.ingredients.through.objects.filter(
+                        recipe=recipe,
+                        ingredient_id=ingredient_id
+                    ).update(amount=amount)
 
         tags_data = data.get('tags')
         if tags_data:
-            tag_ids = [tag['id'] for tag in tags_data]
+            tag_ids = [
+                tag.get('id') for tag in tags_data if tag.get('id') is not None
+            ]
             recipe.tags.set(tag_ids)
 
         for field, value in data.items():
