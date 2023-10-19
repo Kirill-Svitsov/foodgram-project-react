@@ -1,4 +1,4 @@
-from django_filters.rest_framework import FilterSet, filters
+from django_filters import rest_framework
 from rest_framework.filters import SearchFilter
 
 from recipes.models import Ingredient, Recipe, Tag
@@ -12,27 +12,57 @@ class IngredientFilter(SearchFilter):
         fields = ('name',)
 
 
-class RecipeFilter(FilterSet):
-    tags = filters.ModelMultipleChoiceFilter(
-        field_name='tags__slug',
-        to_field_name='slug',
-        queryset=Tag.objects.all(),
+# class RecipeFilter(FilterSet):
+#     tags = filters.ModelMultipleChoiceFilter(
+#         field_name='tags__slug',
+#         to_field_name='slug',
+#         queryset=Tag.objects.all(),
+#     )
+#     is_favorited = filters.NumberFilter(method='filter_is_favorited')
+#     is_in_shopping_cart = filters.NumberFilter(
+#         method='filter_is_in_shopping_cart'
+#     )
+#
+#     class Meta:
+#         model = Recipe
+#         fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart',)
+#
+#     def filter_is_favorited(self, queryset, name, value):
+#         if value and self.request.user.is_authenticated:
+#             return queryset.filter(favorites__user=self.request.user)
+#         return queryset
+#
+#     def filter_is_in_shopping_cart(self, queryset, name, value):
+#         if value and self.request.user.is_authenticated:
+#             return queryset.filter(shopping_list__user=self.request.user)
+#         return
+
+
+class RecipeFilter(rest_framework.FilterSet):
+    is_favorited = rest_framework.BooleanFilter(method="get_favorited_filter")
+    is_in_shopping_cart = rest_framework.BooleanFilter(
+        method="get_shopping_cart_filter"
     )
-    is_favorited = filters.NumberFilter(method='filter_is_favorited')
-    is_in_shopping_cart = filters.NumberFilter(
-        method='filter_is_in_shopping_cart'
-    )
+    author = rest_framework.NumberFilter(
+        field_name="author", lookup_expr="exact")
+    tags = rest_framework.ModelMultipleChoiceFilter(
+        field_name="tags__slug", to_field_name="slug",
+        queryset=Tag.objects.all())
 
     class Meta:
         model = Recipe
-        fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart',)
+        fields = ("author", "tags", "is_favorited", "is_in_shopping_cart")
 
-    def filter_is_favorited(self, queryset, name, value):
-        if value and self.request.user.is_authenticated:
-            return queryset.filter(favorites__user=self.request.user)
+    def get_favorited_filter(self, queryset, i, value):
+        if value:
+            return queryset.prefetch_related("favorite").filter(
+                favorite__user=self.request.user
+            )
         return queryset
 
-    def filter_is_in_shopping_cart(self, queryset, name, value):
-        if value and self.request.user.is_authenticated:
-            return queryset.filter(shopping_list__user=self.request.user)
-        return
+    def get_shopping_cart_filter(self, queryset, i, value):
+        if value:
+            return queryset.prefetch_related("carts").filter(
+                carts__user=self.request.user
+            )
+        return queryset
