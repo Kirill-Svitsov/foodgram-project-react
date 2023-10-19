@@ -255,45 +255,45 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-    @action(detail=True, methods=['patch'])
-    def update_recipe(self, request, pk=None):
-        data = request.data
-        recipe = self.get_object()
-
-        ingredients_data = data.get('ingredients')
-        if ingredients_data:
-            for ingredient_data in ingredients_data:
-                ingredient_id = ingredient_data.get('id')
-                amount = ingredient_data.get('amount')
-                if ingredient_id and amount is not None:
-                    (
-                        recipe_ingredient,
-                        created
-                    ) = RecipeIngredient.objects.get_or_create(
-                        recipe=recipe,
-                        ingredient_id=ingredient_id
-                    )
-                    recipe_ingredient.amount = amount
-                    recipe_ingredient.save()
-
-        tags_data = data.get('tags')
-        if tags_data:
-            tag_ids = [
-                tag.get('id') for tag in tags_data if tag.get('id') is not None
-            ]
-            recipe.tags.set(tag_ids)
-
-        for field, value in data.items():
-            if field not in ['ingredients', 'tags']:
-                setattr(recipe, field, value)
-        recipe.save()
-
-        updated_recipe = RecipeSerializer(
-            recipe,
-            context={'request': request}
-        ).data
-
-        return Response(updated_recipe)
+    # @action(detail=True, methods=['patch'])
+    # def update_recipe(self, request, pk=None):
+    #     data = request.data
+    #     recipe = self.get_object()
+    #
+    #     ingredients_data = data.get('ingredients')
+    #     if ingredients_data:
+    #         for ingredient_data in ingredients_data:
+    #             ingredient_id = ingredient_data.get('id')
+    #             amount = ingredient_data.get('amount')
+    #             if ingredient_id and amount is not None:
+    #                 (
+    #                     recipe_ingredient,
+    #                     created
+    #                 ) = RecipeIngredient.objects.get_or_create(
+    #                     recipe=recipe,
+    #                     ingredient_id=ingredient_id
+    #                 )
+    #                 recipe_ingredient.amount = amount
+    #                 recipe_ingredient.save()
+    #
+    #     tags_data = data.get('tags')
+    #     if tags_data:
+    #         tag_ids = [
+    #             tag.get('id') for tag in tags_data if tag.get('id') is not None
+    #         ]
+    #         recipe.tags.set(tag_ids)
+    #
+    #     for field, value in data.items():
+    #         if field not in ['ingredients', 'tags']:
+    #             setattr(recipe, field, value)
+    #     recipe.save()
+    #
+    #     updated_recipe = RecipeSerializer(
+    #         recipe,
+    #         context={'request': request}
+    #     ).data
+    #
+    #     return Response(updated_recipe)
 
 
 class RecipeIngredientViewSet(viewsets.ModelViewSet):

@@ -137,6 +137,28 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         return recipe
 
+    def update(self, instance, validated_data):
+        ingredients_data = validated_data.pop('ingredients', [])
+        tags_data = validated_data.pop('tags', [])
+
+        RecipeIngredient.objects.filter(recipe=instance).delete()
+        for ingredient_data in ingredients_data:
+            ingredient_id = ingredient_data.get('id')
+            amount = ingredient_data.get('amount')
+            RecipeIngredient.objects.create(
+                recipe=instance,
+                ingredient_id=ingredient_id,
+                amount=amount
+            )
+
+        instance.tags.set(tags_data)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        return instance
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['author'] = CustomUserSerializer(

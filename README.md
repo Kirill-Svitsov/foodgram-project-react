@@ -67,4 +67,20 @@ http://localhost/api/ingredients/
   "text": "string",
   "cooking_time": 1
 }
-dsds
+Создание рецепта:
+{
+  "ingredients": [
+    {
+      "id": 1123,
+      "amount": 10
+    }
+  ],
+  "tags": [
+    1,
+    2
+  ],
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+  "name": "string",
+  "text": "string",
+  "cooking_time": 1
+}
