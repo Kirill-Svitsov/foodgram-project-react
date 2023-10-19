@@ -266,10 +266,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 ingredient_id = ingredient_data.get('id')
                 amount = ingredient_data.get('amount')
                 if ingredient_id and amount is not None:
-                    recipe.ingredients.through.objects.filter(
+                    (
+                        recipe_ingredient,
+                        created
+                    ) = RecipeIngredient.objects.get_or_create(
                         recipe=recipe,
                         ingredient_id=ingredient_id
-                    ).update(amount=amount)
+                    )
+                    recipe_ingredient.amount = amount
+                    recipe_ingredient.save()
 
         tags_data = data.get('tags')
         if tags_data:
