@@ -255,34 +255,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-    @action(detail=True, methods=['patch'])
-    def update_recipe(self, request, pk=None):
-        data = request.data
-        recipe = self.get_object()
-        ingredients_data = data.get('ingredients')
-        if ingredients_data:
-            for ingredient_data in ingredients_data:
-                ingredient_id = ingredient_data['id']
-                amount = ingredient_data['amount']
-                recipe_ingredient = RecipeIngredient.objects.get(
-                    recipe=recipe,
-                    ingredient_id=ingredient_id
-                )
-                recipe_ingredient.amount = int(amount)
-                recipe_ingredient.save()
-        tags_data = data.get('tags')
-        if tags_data:
-            recipe.tags.set(tags_data)
-        for field, value in data.items():
-            if field not in ['ingredients', 'tags']:
-                setattr(recipe, field, value)
-        recipe.save()
-        updated_recipe = RecipeSerializer(
-            recipe,
-            context={'request': request}
-        ).data
-        return Response(updated_recipe)
-
 
 class RecipeIngredientViewSet(viewsets.ModelViewSet):
     queryset = RecipeIngredient.objects.all()
