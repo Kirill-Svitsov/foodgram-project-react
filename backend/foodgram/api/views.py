@@ -279,7 +279,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     #     tags_data = data.get('tags')
     #     if tags_data:
     #         tag_ids = [
-    #             tag.get('id') for tag in tags_data if tag.get('id') is not None
+    #             tag.get('id')
+    #             for tag in tags_data if tag.get('id') is not None
     #         ]
     #         recipe.tags.set(tag_ids)
     #
