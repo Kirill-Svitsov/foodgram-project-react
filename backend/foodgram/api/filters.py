@@ -22,7 +22,6 @@ class RecipeFilter(FilterSet):
         method='filter_is_favorited'
     )
     is_in_shopping_cart = filters.BooleanFilter(
-        field_name='is_in_shopping_cart',
         method='filter_is_in_shopping_cart'
     )
 
