@@ -120,6 +120,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'author',
             'ingredients',
             'is_favorited',
+            'is_in_shopping_cart',
             'name',
             'image',
             'text',
@@ -127,7 +128,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('author',)
 
-    # 'is_in_shopping_cart',
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
@@ -204,10 +204,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             return None
         return recipe.favorite.filter(user=user).exists()
 
-    # def get_is_in_shopping_cart(self, recipe):
-    #     user = self.context.get('request').user
-    #     return (user.is_anonymous
-    #             and recipe.shopping_list.filter(user=user).exists())
+    def get_is_in_shopping_cart(self, recipe):
+        user = self.context.get('request').user
+        return (user.is_anonymous
+                and recipe.shopping_list.filter(user=user).exists())
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
