@@ -114,20 +114,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        # exclude = ['pub_date']
-        # read_only_fields = ('author',)
-        fields = (
-            'id',
-            'tags',
-            'author',
-            'ingredients',
-            'is_favorited',
-            'is_in_shopping_cart',
-            'name',
-            'image',
-            'text',
-            'cooking_time',
-        )
+        exclude = ['pub_date']
+        read_only_fields = ('author',)
 
     # def get_image_url(self, obj):
     #     if obj.image:
@@ -203,16 +191,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             representation['is_in_shopping_cart'] = False
 
         return representation
-
-    def get_is_favorited(self, recipe):
-        user = self.context.get('request').user
-        if user.is_anonymous:
-            return None
-        return recipe.favorite.filter(user=user).exists()
-
-    def get_is_in_shopping_cart(self, recipe):
-        user = self.context.get('request').user
-        return user.is_anonymous and recipe.shoppingcart(user=user).exists()
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
