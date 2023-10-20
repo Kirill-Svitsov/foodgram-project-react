@@ -206,7 +206,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_in_shopping_cart(self, recipe):
         user = self.context.get('request').user
-        return recipe.shopping_list(user=user).exists()
+        return recipe.shopping_list.filter(user=user).exists()
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
