@@ -114,13 +114,19 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        exclude = ['pub_date']
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time',
+        )
         read_only_fields = ('author',)
-
-    # def get_image_url(self, obj):
-    #     if obj.image:
-    #         return obj.image.url
-    #     return None
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
@@ -177,20 +183,30 @@ class RecipeSerializer(serializers.ModelSerializer):
             many=True,
             context=self.context
         ).data
-        if 'request' in self.context \
-                and self.context['request'].user.is_authenticated:
-            representation['is_favorited'] = Favorite.objects.filter(
-                user=self.context['request'].user,
-                recipe=instance).exists()
-            representation['is_in_shopping_cart'] = \
-                ShoppingList.objects.filter(
-                    user=self.context['request'].user,
-                    recipe=instance).exists()
-        else:
-            representation['is_favorited'] = False
-            representation['is_in_shopping_cart'] = False
+        # if 'request' in self.context \
+        #         and self.context['request'].user.is_authenticated:
+        #     representation['is_favorited'] = Favorite.objects.filter(
+        #         user=self.context['request'].user,
+        #         recipe=instance).exists()
+        #     representation['is_in_shopping_cart'] = \
+        #         ShoppingList.objects.filter(
+        #             user=self.context['request'].user,
+        #             recipe=instance).exists()
+        # else:
+        #     representation['is_favorited'] = False
+        #     representation['is_in_shopping_cart'] = False
 
         return representation
+
+    def get_is_favorited(self, recipe):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return None
+        return recipe.favorite.filter(user=user).exists()
+
+    def get_is_in_shopping_cart(self, recipe):
+        user = self.context.get('request').user
+        return user.is_anonymous and recipe.shoppingcart(user=user).exists()
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
