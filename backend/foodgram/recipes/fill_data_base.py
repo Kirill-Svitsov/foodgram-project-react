@@ -1,6 +1,6 @@
 import csv
 
-from app.recipes import models
+from recipes import models
 
 with open('ingredients.csv', 'r') as file:
     reader = csv.reader(file)
