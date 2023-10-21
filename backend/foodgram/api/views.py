@@ -146,7 +146,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
         SearchFilter
     ]
     filterset_class = IngredientFilter
-    search_fields = ['author']
+    search_fields = ['name']
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
