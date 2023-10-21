@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.filters import RecipeFilter  # IngredientFilter
+from api.filters import RecipeFilter, IngredientFilter
 from api.generate_shopping_list import generate_shopping_list
 from api.pagination import CustomPageNumberPagination
 from api.permissions import AllowAnyForCreate, IsAuthorOrReadOnly, IsReadOnly
@@ -140,8 +140,8 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [IsReadOnly]
-    # filter_backends = (IngredientFilter,)
-    # search_fields = ('^name',)
+    filter_backends = (IngredientFilter,)
+    search_fields = ('^name',)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -206,7 +206,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ShoppingList.objects.filter(user=request.user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['get'], url_path='download_shopping_cart')
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='download_shopping_cart'
+    )
     def download_shopping_cart(self, request, **kwargs):
         shopping_list = ShoppingList.objects.filter(user=request.user)
         response = HttpResponse(content_type='text/plain')

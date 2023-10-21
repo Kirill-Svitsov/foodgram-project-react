@@ -84,4 +84,3 @@ http://localhost/api/ingredients/
   "text": "string",
   "cooking_time": 1
 }
-sss
