@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -140,8 +141,12 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [IsReadOnly]
-    filter_backends = (IngredientFilter,)
-    search_fields = ('^name',)
+    filter_backends = [
+        django_filters.DjangoFilterBackend,
+        SearchFilter
+    ]
+    filterset_class = IngredientFilter
+    search_fields = ['author']
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
