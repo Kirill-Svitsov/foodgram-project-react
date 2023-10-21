@@ -2,7 +2,7 @@ import csv
 
 from models import Ingredient
 
-with open('../api/commands/ingredients.csv', 'r') as file:
+with open('ingredients.csv', 'r') as file:
     reader = csv.reader(file)
     for row in reader:
         name, measurement_unit = row[0].split(',')
