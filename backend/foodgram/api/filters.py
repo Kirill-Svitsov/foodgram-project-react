@@ -7,7 +7,7 @@ from users.models import CustomUser
 class IngredientFilter(FilterSet):
     name = filters.CharFilter(
         field_name='name',
-        lookup_expr='icontains'
+        lookup_expr='istartswith'
     )
 
     class Meta:
@@ -23,10 +23,12 @@ class RecipeFilter(FilterSet):
         queryset=Tag.objects.all()
     )
     is_favorited = filters.BooleanFilter(
-        method='filter_is_favorited'
+        method='filter_is_favorited',
+        field_name='is_favorited',
     )
     is_in_shopping_cart = filters.BooleanFilter(
-        method='filter_is_in_shopping_cart'
+        method='filter_is_in_shopping_cart',
+        field_name='is_in_shopping_cart',
     )
 
     class Meta:

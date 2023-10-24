@@ -124,7 +124,10 @@ class Recipe(models.Model):
         verbose_name = "Рецепт"
         verbose_name_plural = "Рецепты"
         constraints = [
-            UniqueConstraint(fields=["name", "author"], name="unique_recipe"),
+            UniqueConstraint(
+                fields=["name", "author"],
+                name="unique_recipe"
+            ),
         ]
 
     def __str__(self):
@@ -181,8 +184,12 @@ class Favorite(models.Model):
         related_name='favorite'
     )
 
+    class Meta:
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
     def __str__(self):
-        return f"{self.user.username} -> {self.recipe.name}"
+        return f'{self.recipe}'
 
 
 class ShoppingList(models.Model):

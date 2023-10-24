@@ -2,16 +2,17 @@ from django.contrib.auth.hashers import check_password
 from django_filters import rest_framework as django_filters
 from django.http import HttpResponse
 from djoser.views import UserViewSet
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
 from api.filters import RecipeFilter, IngredientFilter
 from api.generate_shopping_list import generate_shopping_list
 from api.pagination import CustomPageNumberPagination
-from api.permissions import AllowAnyForCreate, IsAuthorOrReadOnly, IsReadOnly
+from api.permissions import AllowAnyForCreate, IsAuthorOrReadOnly
 from api.serializers import (CustomUserSerializer, IngredientSerializer,
                              RecipeIngredientSerializer, RecipeSerializer,
                              ShoppingListSerializer,
@@ -47,25 +48,20 @@ class CustomUserViewSet(UserViewSet):
                 {'detail': 'Authentication credentials were not provided.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
         current_password = request.data.get('current_password')
         new_password = request.data.get('new_password')
-
         if not current_password or not new_password:
             return Response(
                 {'detail': 'Current_password and new_password are required.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         if not check_password(current_password, user.password):
             return Response(
                 {'detail': 'Invalid current password.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         user.set_password(new_password)
         user.save()
-
         return Response(
             {'detail': 'Password changed successfully.'},
             status=status.HTTP_204_NO_CONTENT
@@ -131,16 +127,20 @@ class CustomUserViewSet(UserViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(mixins.ListModelMixin,
+                 mixins.RetrieveModelMixin,
+                 viewsets.GenericViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = [IsReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = [IsReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [
         django_filters.DjangoFilterBackend,
         SearchFilter
@@ -183,7 +183,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='shopping_cart',
     )
     def shopping_cart(self, request, **kwargs):
-        recipe = self.get_object()
+        try:
+            recipe = self.get_object()
+        except Recipe.DoesNotExist:
+            return Response(
+                {"detail": "Recipe does not exist."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         in_shopping_list = ShoppingList.objects.filter(
             user=request.user,
             recipe=recipe

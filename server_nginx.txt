@@ -1,0 +1,53 @@
+server {
+    listen 443 ssl;
+    server_name 51.250.100.142 blackaquitance.hopto.org;
+    server_tokens off;
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+    }
+    ssl_certificate /etc/letsencrypt/live/blackaquitance.hopto.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/blackaquitance.hopto.org/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+
+server {
+    if ($host = svitsovdiplom.hopto.org) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    server_name 51.250.100.142 svitsovdiplom.hopto.org kittygramsvitsov.hopto.org blackaquitance.hopto.org;
+    return 301 https://$host$request_uri;
+
+
+}
+
+server {
+    listen 443 ssl;
+    server_name 51.250.100.142 kittygramsvitsov.hopto.org;
+    server_tokens off;
+    location / {
+        proxy_pass http://127.0.0.1:9000;
+        client_max_body_size 20M;
+    }
+    ssl_certificate /etc/letsencrypt/live/kittygramsvitsov.hopto.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/kittygramsvitsov.hopto.org/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+server {
+    listen 443 ssl;
+    server_name 51.250.100.142 svitsovdiplom.hopto.org;
+    server_tokens off;
+    location / {
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        proxy_pass              http://127.0.0.1:7000;
+        client_max_body_size 20M;
+    }
+    ssl_certificate /etc/letsencrypt/live/svitsovdiplom.hopto.org/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/svitsovdiplom.hopto.org/privkey.pem; # managed by Certbot
+}

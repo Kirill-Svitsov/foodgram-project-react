@@ -1,87 +1,106 @@
-# praktikum_new_diplom
-Список эндпоинтов:
+[![GitHub](https://img.shields.io/badge/GitHub-Kirill--Svitsov-blue)](https://github.com/Kirill-Svitsov)
+
+# Foodgram graduation project by Kirill Svitsov
+
+## Description
+
+Это дипломный проект, завершающий мое обучение в Яндекс.Практикум.
+«Фудграм» — сайт, на котором пользователи будут публиковать рецепты,
+добавлять чужие рецепты в избранное и подписываться на публикации других авторов.
+Пользователям сайта также будет доступен сервис «Список покупок».
+Он позволит создавать список продуктов, которые нужно купить для приготовления выбранных блюд.
+
+## Technologies
+
+- Python 3.10
+- Django 4.2.4
+- Django Rest Framework
+- Docker
+- React
+- SPA
+- Nginx
+
+## Запустить проект локально:
+
+- Установите и активируйте виртуальное окружение
+
+```
+  python3 -m venv venv
+```
+
+```
+  source venv/bin/activate
+```
+
+- Установите зависимости из файла requirements.txt
+
+```
+  pip install -r requirements.txt
+```
+
+- Выполните миграции из папки с файлом manage.py
+
+```
+  python3 manage.py makemigtations
+```
+
+```
+  python3 manage.py migrate
+```
+
+## Список основных эндпоинтов:
+
 - Пользователи:
+
 ```
 http://localhost/api/users/
 ```
+
+- Для авторизованного пользователя есть возможность просмотра своего профиля
+
+```
+http://localhost/api/users/me/
+```
+
 - Тэги:
+
 ```
 http://localhost/api/tags/
 ```
+
 - Рецепты:
+
 ```
 http://localhost/api/recipes/
 ```
-Пример POST запроса на создание рецепта:
-```
-{
-  "name": "Тестовый рецепт на ингридиенты по ид",
-  "text": "Очень вкусный греческий салат",
-  "cooking_time": 15,
-  "ingredients": [
-    {"ingredient": 1, "amount": 2},
-    {"ingredient": 2, "amount": 2},
-    {"ingredient": 3, "amount": 4}
-  ],
-  "tags": [1, 2]
-}
-```
+
 - Скачать список покупок:
+
 ```
 http://localhost/api/recipes/download_shopping_cart/
 ```
+
 - Избранное:
+
 ```
 http://localhost/api/recipes/{id}/favorite/
 ```
+
 - Список подписок:
+
 ```
 http://localhost/api/users/subscriptions/
 ```
+
 - Ингредиенты:
+
 ```
 http://localhost/api/ingredients/
 ```
+
 Суперюзер:
+
 ```
 Логин: Svitsov
 Пароль: cuprumelement29
 ```
-
-При фильтрации на странице пользователя должны фильтроваться только рецепты выбранного пользователя. 
-Такой же принцип должен соблюдаться при фильтрации списка избранного!
-
-{
-  "ingredients": [
-    {
-      "id": 1123,
-      "amount": 10
-    }
-  ],
-  "tags": [
-    1,
-    2
-  ],
-  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
-  "name": "string",
-  "text": "string",
-  "cooking_time": 1
-}
-Создание рецепта:
-{
-  "ingredients": [
-    {
-      "id": 1123,
-      "amount": 10
-    }
-  ],
-  "tags": [
-    1,
-    2
-  ],
-  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
-  "name": "string",
-  "text": "string",
-  "cooking_time": 1
-}
-again
