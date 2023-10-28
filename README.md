@@ -98,7 +98,7 @@ http://localhost/api/users/subscriptions/
 http://localhost/api/ingredients/
 ```
 
-Суперюзер:
+Superuser:
 
 ```
 Логин: Svitsov
