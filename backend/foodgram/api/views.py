@@ -189,7 +189,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             user=request.user,
             recipe=recipe
         )
-        serializer = serializers.RecipeGetSerializer(recipe)
+        serializer = (
+            serializers.ShoppingListSerializer(recipe)
+        )
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
@@ -250,7 +252,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             user=request.user,
             recipe=recipe
         )
-        serializer = serializers.RecipeGetSerializer(recipe)
+        serializer = (
+            serializers.FavoriteSerializer(recipe))
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED

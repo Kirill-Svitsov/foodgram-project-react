@@ -7,7 +7,7 @@ from rest_framework import serializers
 from constants import MIN_COOKING_TIME, MAX_COOKING_TIME
 from recipes.models import (
     Ingredient, Recipe,
-    RecipeIngredient, Tag
+    RecipeIngredient, Tag, ShoppingList, Favorite
 )
 from users.models import User
 
@@ -306,3 +306,27 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
                   'name',
                   'image',
                   'cooking_time')
+
+
+class ShoppingListSerializer(serializers.ModelSerializer):
+    """Сериализатор для ShoppingList"""
+    class Meta:
+        model = ShoppingList
+        fields = '__all__'
+
+    def to_representation(self, recipe):
+        return RecipeGetSerializer(
+            recipe, context=self.context
+        ).data
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    """Сериализатор для Favorite"""
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+
+    def to_representation(self, recipe):
+        return RecipeGetSerializer(
+            recipe, context=self.context
+        ).data
