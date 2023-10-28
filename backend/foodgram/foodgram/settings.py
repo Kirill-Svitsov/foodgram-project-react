@@ -70,15 +70,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql' if USE_SQLITE is None else 'django.db.backends.sqlite3',
-        'NAME': os.getenv('POSTGRES_DB', 'django') if USE_SQLITE is None else BASE_DIR / 'local_db.sqlite3',
-        'USER': os.getenv('POSTGRES_USER', 'django') if USE_SQLITE is None else '',
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', '') if USE_SQLITE is None else '',
-        'HOST': os.getenv('DB_HOST', 'db') if USE_SQLITE is None else '',
-        'PORT': os.getenv('DB_PORT', 5432) if USE_SQLITE is None else '',
+    'production': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'django'),
+        'USER': os.getenv('POSTGRES_USER', 'django'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'db'),
+        'PORT': os.getenv('DB_PORT', 5432),
+    },
+    'development': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'local_db.sqlite3',
     }
 }
+DATABASES['default'] = DATABASES['development'] if DEBUG else DATABASES['production']
 
 PASSWORD_VALIDATION_USER = (
     'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
@@ -124,7 +129,7 @@ MEDIA_URL = '/backend_media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -137,15 +142,14 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    "LOGIN_FIELD": "email",
-    "PERMISSIONS": {
-        "user": ["rest_framework.permissions.IsAuthenticated"],
-        "user_list": ["rest_framework.permissions.AllowAny"],
+    'LOGIN_FIELD': 'email',
+    'PERMISSIONS': {
+        'user': ['rest_framework.permissions.AllowAny'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
     },
-    "SERIALIZERS": {
-        "user": "api.serializers.CustomUserSerializer",
-        "current_user": "api.serializers.CustomUserSerializer",
-        "user_create": "api.serializers.CustomUserCreateSerializer",
+    'SERIALIZERS': {
+        'user': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
     },
-    "HIDE_USERS": False,
+    'HIDE_USERS': False,
 }

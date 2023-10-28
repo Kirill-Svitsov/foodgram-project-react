@@ -7,14 +7,10 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return obj.author == request.user
+        return (request.method in permissions.SAFE_METHODS
+                or obj.author == request.user
+                )
 
-
-class AllowAnyForCreate(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action == 'create' \
-                or request.method in permissions.SAFE_METHODS:
-            return True
-        return request.user and request.user.is_authenticated
+        return (request.method in permissions.SAFE_METHODS
+                or request.user.is_authenticated)
