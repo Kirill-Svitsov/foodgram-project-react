@@ -15,3 +15,5 @@ MAX_LENGTH_TAG_COLOR = 7
 # Константы модели RecipeIngredient
 MIN_AMOUNT = 1
 MAX_AMOUNT = 10000
+# Дефолтный лимит рецептов
+DEFAULT_RECIPES_LIMIT = 3

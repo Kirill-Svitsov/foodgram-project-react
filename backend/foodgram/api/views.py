@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from api import serializers
 from api.filters import IngredientFilter, RecipeFilter
 from api.generate_shopping_list import generate_shopping_list
-from api.pagination import CustomPageNumberPagination
+from api.pagination import PageNumberPagination
 from api.permissions import IsAuthorOrReadOnly
 from recipes.models import (
     Favorite, Ingredient,
@@ -27,7 +27,7 @@ from users.models import Follow, User
 
 class UserViewSet(DjoserUserViewSet):
     """Вьюсет для модели User"""
-    pagination_class = CustomPageNumberPagination
+    pagination_class = PageNumberPagination
 
     @action(
         detail=False,
@@ -89,7 +89,6 @@ class UserViewSet(DjoserUserViewSet):
             user=request.user,
             author=author
         )
-
         serializer = serializers.UserRecipesSerializer(
             author,
             context={'request': request}
@@ -154,7 +153,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         'recipe_ingredients',
         'recipe_ingredients__ingredient'
     ).all()
-    pagination_class = CustomPageNumberPagination
+    pagination_class = PageNumberPagination
     filter_backends = (django_filters.DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
@@ -190,7 +189,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe=recipe
         )
         serializer = (
-            serializers.ShoppingListSerializer(recipe)
+            serializers.ShortRecipeSerializer(recipe)
         )
         return Response(
             serializer.data,
@@ -230,7 +229,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['POST'],
-        url_path='favorite',
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk):
@@ -253,7 +251,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe=recipe
         )
         serializer = (
-            serializers.FavoriteSerializer(recipe))
+            serializers.ShortRecipeSerializer(recipe))
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED

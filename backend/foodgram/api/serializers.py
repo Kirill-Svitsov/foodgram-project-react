@@ -4,10 +4,14 @@ from django.core.validators import RegexValidator
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from constants import MIN_COOKING_TIME, MAX_COOKING_TIME
+from constants import (
+    MIN_COOKING_TIME,
+    MAX_COOKING_TIME,
+    DEFAULT_RECIPES_LIMIT
+)
 from recipes.models import (
     Ingredient, Recipe,
-    RecipeIngredient, Tag, ShoppingList, Favorite
+    RecipeIngredient, Tag
 )
 from users.models import User
 
@@ -42,9 +46,9 @@ class UserSerializer(serializers.ModelSerializer):
     )
 
     def get_is_subscribed(self, obj):
-        user = self.context['request'].user
-        if user.is_authenticated:
-            return user.following.filter(author=obj).exists()
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return request.user.following.filter(author=obj).exists()
         return False
 
     class Meta:
@@ -143,16 +147,16 @@ class RecipeGetSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, recipe):
-        user = self.context.get('request').user
-        return not user.is_anonymous and (
-            recipe.favorites.filter(user=user).exists()
-        )
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return recipe.favorites.filter(user=request.user).exists()
+        return False
 
     def get_is_in_shopping_cart(self, recipe):
-        user = self.context.get('request').user
-        return not user.is_anonymous and (
-            recipe.shoppinglists.filter(user=user).exists()
-        )
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return recipe.shoppinglists.filter(user=request.user).exists()
+        return False
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
@@ -281,7 +285,7 @@ class UserRecipesSerializer(UserSerializer):
 
     def get_recipes(self, user):
         recipes_limit = self.context['request'].GET.get(
-            'recipes_limit', default=3
+            'recipes_limit', default=DEFAULT_RECIPES_LIMIT
         )
         recipes_user = user.recipes.all()[:int(recipes_limit)]
         return ShortRecipeSerializer(
@@ -306,25 +310,6 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
                   'name',
                   'image',
                   'cooking_time')
-
-
-class ShoppingListSerializer(serializers.ModelSerializer):
-    """Сериализатор для ShoppingList"""
-    class Meta:
-        model = ShoppingList
-        fields = '__all__'
-
-    def to_representation(self, recipe):
-        return RecipeGetSerializer(
-            recipe, context=self.context
-        ).data
-
-
-class FavoriteSerializer(serializers.ModelSerializer):
-    """Сериализатор для Favorite"""
-    class Meta:
-        model = Favorite
-        fields = '__all__'
 
     def to_representation(self, recipe):
         return RecipeGetSerializer(
