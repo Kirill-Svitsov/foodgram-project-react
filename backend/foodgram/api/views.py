@@ -5,7 +5,7 @@ from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from api import serializers
@@ -139,7 +139,10 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Recipe"""
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (
+        IsAuthorOrReadOnly,
+        IsAuthenticatedOrReadOnly
+    )
     queryset = Recipe.objects.select_related(
         'author'
     ).prefetch_related(
@@ -148,7 +151,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         'recipe_ingredients__ingredient'
     ).all()
     pagination_class = CustomPageNumberPagination
-    ordering = ('-pub_date',)
     filter_backends = (django_filters.DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
@@ -183,7 +185,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             user=request.user,
             recipe=recipe
         )
-        serializer = serializers.ShortRecipeSerializer(recipe)
+        serializer = serializers.RecipeGetSerializer(recipe)
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
@@ -244,7 +246,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             user=request.user,
             recipe=recipe
         )
-        serializer = serializers.ShortRecipeSerializer(recipe)
+        serializer = serializers.RecipeGetSerializer(recipe)
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
