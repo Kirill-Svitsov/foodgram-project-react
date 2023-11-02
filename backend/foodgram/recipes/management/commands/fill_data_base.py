@@ -1,4 +1,5 @@
 import json
+import os
 
 from django.core.management.base import BaseCommand
 
@@ -7,30 +8,37 @@ from recipes.models import Ingredient, Tag
 
 class Command(BaseCommand):
     def _create_data(self):
-        with open('ingredients.json', 'r', encoding='utf-8') as file:
-            data = json.load(file)
-            counter = 0
-            for line in data:
-                name = line['name']
-                measurement_unit = line['measurement_unit']
-                ingredient, created = Ingredient.objects.get_or_create(
-                    name=name,
-                    measurement_unit=measurement_unit
-                )
-                if created:
-                    counter += 1
-                    self.stdout.write(
-                        self.style.SUCCESS(
-                            (f'Created Ingredient: {name},'
-                             f' общее количество: {counter}')
-                        )
+        if os.path.exists('ingredients.json'):
+            with open('ingredients.json', 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                counter = 0
+                for line in data:
+                    name = line['name']
+                    measurement_unit = line['measurement_unit']
+                    ingredient, created = Ingredient.objects.get_or_create(
+                        name=name,
+                        measurement_unit=measurement_unit
                     )
+                    if created:
+                        counter += 1
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                (f'Created Ingredient: {name},'
+                                 f' общее количество: {counter}')
+                            )
+                        )
+        else:
+            self.stdout.write(
+                self.style.ERROR(
+                    'Файл ingredients.json не существует'
+                )
+            )
 
     def _load_tags(self):
         tags_data = [
             {
                 'name': 'Завтрак',
-                'color': "#FF0000",
+                'color': '#FF0000',
                 'slug': 'zavtrak'
             },
             {

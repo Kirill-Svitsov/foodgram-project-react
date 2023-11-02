@@ -1,4 +1,7 @@
+from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
+from users.models import User, Follow
 
 
 class UserAdmin(BaseUserAdmin):
@@ -24,5 +27,9 @@ class UserAdmin(BaseUserAdmin):
     get_followers_count.short_description = "Кол-во подписчиков"
 
 
-class SubscriptionAdmin(BaseUserAdmin):
+class FollowAdmin(admin.ModelAdmin):
     list_display = ("user", "author")
+
+
+admin.site.register(User, UserAdmin)
+admin.site.register(Follow, FollowAdmin)

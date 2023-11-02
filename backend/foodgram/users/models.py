@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from django.db.models import UniqueConstraint
 
@@ -10,11 +11,11 @@ from constants import (
 
 class User(AbstractUser):
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [
+    REQUIRED_FIELDS = (
         'username',
         'first_name',
         'last_name',
-    ]
+    )
     email = models.EmailField(
         unique=True,
         max_length=MAX_LENGTH_USER_EMAIL,
@@ -65,5 +66,11 @@ class Follow(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 
+    def clean(self):
+        if self.user == self.author:
+            raise ValidationError(
+                'Нельзя подписаться на самого себя'
+            )
+
     def __str__(self):
-        return f"{self.user.username} -> {self.author.username}"
+        return f'{self.user.username} -> {self.author.username}'

@@ -1,7 +1,7 @@
 # Константа пагинации
 PAGINATION_PAGE_SIZE = 6
 # Константы для модели User
-MAX_LENGTH_USER_EMAIL = 250
+MAX_LENGTH_USER_EMAIL = 254
 MAX_LENGTH_USER_FIELD = 150
 # Константы модели Recipe
 MAX_LENGTH_RECIPE = 200

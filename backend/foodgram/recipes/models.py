@@ -105,7 +105,7 @@ class Recipe(models.Model):
         verbose_name='Изображение'
     )
     text = models.TextField(verbose_name='Текст')
-    cooking_time = models.PositiveIntegerField(
+    cooking_time = models.SmallIntegerField(
         verbose_name='Время приготовления (в минутах)',
         validators=[
             MinValueValidator(
@@ -198,7 +198,7 @@ class RecipeIngredient(models.Model):
                 f'{self.ingredient.measurement_unit})')
 
 
-class BaseRecipe(models.Model):
+class UserRecipe(models.Model):
     """
     Базовая модель рецепта, с общими
     атрибутами для моделей ShoppingList
@@ -225,7 +225,7 @@ class BaseRecipe(models.Model):
         return f'{self.user} добавил {self.recipe.name}'
 
 
-class Favorite(BaseRecipe):
+class Favorite(UserRecipe):
     """Модель для Избранного"""
 
     class Meta:
@@ -240,7 +240,7 @@ class Favorite(BaseRecipe):
         ]
 
 
-class ShoppingList(BaseRecipe):
+class ShoppingList(UserRecipe):
     """Модель для тегов"""
 
     class Meta:
