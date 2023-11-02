@@ -153,8 +153,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED
             )
         else:
-            status_code = (serializer.errors['code'] if 'code' in serializer.errors
-                           else status.HTTP_400_BAD_REQUEST)
+            status_code = (
+                serializer.errors['code'] if 'code' in serializer.errors
+                else status.HTTP_400_BAD_REQUEST
+            )
             return Response(serializer.errors, status=status_code)
 
     @action(
