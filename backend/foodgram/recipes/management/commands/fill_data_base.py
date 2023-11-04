@@ -1,5 +1,4 @@
 import json
-import os
 
 from django.core.management.base import BaseCommand
 
@@ -8,7 +7,7 @@ from recipes.models import Ingredient, Tag
 
 class Command(BaseCommand):
     def _create_data(self):
-        if os.path.exists('ingredients.json'):
+        try:
             with open('ingredients.json', 'r', encoding='utf-8') as file:
                 data = json.load(file)
                 counter = 0
@@ -27,10 +26,16 @@ class Command(BaseCommand):
                                  f' общее количество: {counter}')
                             )
                         )
-        else:
+        except FileNotFoundError:
             self.stdout.write(
                 self.style.ERROR(
                     'Файл ingredients.json не существует'
+                )
+            )
+        except json.JSONDecodeError:
+            self.stdout.write(
+                self.style.ERROR(
+                    'Ошибка при чтении JSON файла'
                 )
             )
 

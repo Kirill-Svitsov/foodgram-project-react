@@ -1,5 +1,5 @@
+from django.db.models import Sum
 from django.http import FileResponse
-from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as django_filters
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import viewsets, status
@@ -20,7 +20,7 @@ from api.permissions import IsAuthorOrReadOnly
 from recipes.models import (
     Favorite, Ingredient,
     Recipe, ShoppingList,
-    Tag
+    Tag, RecipeIngredient
 )
 from users.models import Follow, User
 
@@ -64,12 +64,12 @@ class UserViewSet(DjoserUserViewSet):
             data=data,
             context={'request': request}
         )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        status_code = (serializer.errors['code'] if 'code' in serializer.errors
-                       else status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status_code)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
 
     @subscribe.mapping.delete
     def unsubscribe(self, request, id):
@@ -78,7 +78,7 @@ class UserViewSet(DjoserUserViewSet):
             user=request.user,
             author_id=id
         )
-        if not subscription:
+        if not subscription.exists():
             return Response(
                 {
                     'detail':
@@ -138,25 +138,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @staticmethod
     def create_item(serializer_class, request, pk):
         user = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-        data = {'user': user.id, 'recipe': recipe.id}
+        data = {'user': user.id, 'recipe': pk}
         serializer = serializer_class(
             data=data,
             context={'request': request}
         )
-        if serializer.is_valid():
-            serializer.save()
-            short_recipe_serializer = serializers.ShortRecipeSerializer(recipe)
-            return Response(
-                short_recipe_serializer.data,
-                status=status.HTTP_201_CREATED
-            )
-        else:
-            status_code = (
-                serializer.errors['code'] if 'code' in serializer.errors
-                else status.HTTP_400_BAD_REQUEST
-            )
-            return Response(serializer.errors, status=status_code)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
 
     @action(
         detail=True,
@@ -179,8 +171,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if shopping_list.exists():
             shopping_list.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     @action(
         detail=False,
@@ -192,7 +183,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
         shopping_list = ShoppingList.objects.filter(
             user=request.user
         )
+        ingredients_qs = RecipeIngredient.objects.filter(
+            recipe__in=shopping_list.values('recipe')
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).annotate(
+            amount=Sum('amount')
+        ).order_by('ingredient__name')
         shopping_list_text = generate_shopping_list(
+            ingredients_qs,
             shopping_list
         )
         response = FileResponse(
@@ -224,5 +224,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if favorite.exists():
             favorite.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_404_NOT_FOUND)

@@ -71,6 +71,7 @@ class Follow(models.Model):
             raise ValidationError(
                 'Нельзя подписаться на самого себя'
             )
+        super().save(self)
 
     def __str__(self):
         return f'{self.user.username} -> {self.author.username}'

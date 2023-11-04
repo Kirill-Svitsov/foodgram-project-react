@@ -1,18 +1,4 @@
-from django.db.models import Sum
-
-from recipes.models import RecipeIngredient
-
-
-def generate_shopping_list(shopping_list):
-    ingredients_qs = RecipeIngredient.objects.filter(
-        recipe__in=shopping_list.values('recipe')
-    ).values(
-        'ingredient__name',
-        'ingredient__measurement_unit'
-    ).annotate(
-        amount=Sum('amount')
-    ).order_by('ingredient__name')
-
+def generate_shopping_list(ingredients_qs, shopping_list):
     shopping_list_text = 'Вы выбрали следующие рецепты:\n\n'
     for item in shopping_list:
         shopping_list_text += f'- {item.recipe.name}\n'
