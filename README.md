@@ -1,4 +1,4 @@
-[![GitHub](https://img.shields.io/badge/GitHub-Kirill--Svitsov-blue)](https://github.com/Kirill-Svitsov)
+[![Main foodgram workflow](https://github.com/Kirill-Svitsov/foodgram-project-react/actions/workflows/main.yml/badge.svg)](https://github.com/Kirill-Svitsov/foodgram-project-react/actions/workflows/main.yml)
 
 # Foodgram graduation project by Kirill Svitsov
 

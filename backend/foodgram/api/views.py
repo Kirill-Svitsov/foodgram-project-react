@@ -179,28 +179,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='download_shopping_cart'
     )
     def download_shopping_cart(self, request, **kwargs):
-        """Метод для скачивания списка покупок"""
-        shopping_list = ShoppingList.objects.filter(
-            user=request.user
-        )
         ingredients_qs = RecipeIngredient.objects.filter(
-            recipe__in=shopping_list.values('recipe')
+            recipe__in=request.user.shoppinglists.values('recipe')
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
         ).annotate(
             amount=Sum('amount')
         ).order_by('ingredient__name')
+
         shopping_list_text = generate_shopping_list(
             ingredients_qs,
-            shopping_list
+            request.user.shoppinglists.all()
         )
+
         response = FileResponse(
             shopping_list_text,
             as_attachment=True,
             filename='shopping_cart.txt',
             content_type='text/plain'
         )
+
         return response
 
     @action(

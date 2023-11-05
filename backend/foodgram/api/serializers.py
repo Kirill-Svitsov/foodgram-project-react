@@ -94,8 +94,10 @@ class AddIngredientSerializer(serializers.ModelSerializer):
         min_value=MIN_AMOUNT,
         max_value=MAX_AMOUNT,
         error_messages={
-            'min_value': f'Значение должно быть не меньше {MIN_AMOUNT}',
-            'max_value': f'Значение должно быть не больше {MAX_AMOUNT}',
+            'min_value': (f'Количество ингредиента '
+                          f'не может быть меньше {MIN_AMOUNT}'),
+            'max_value': (f'Количество ингредиента '
+                          f'не может быть больше {MAX_AMOUNT}',)
         }
     )
 
@@ -268,7 +270,7 @@ class UserRecipesSerializer(UserSerializer):
 
     def get_recipes(self, user):
         request = self.context.get('request')
-        if request is not None and hasattr(request, 'GET'):
+        if request and hasattr(request, 'GET'):
             recipes_limit = request.GET.get('recipes_limit')
             try:
                 recipes_limit = int(recipes_limit)
@@ -354,8 +356,10 @@ class ShoppingFavoriteSerializer(serializers.ModelSerializer):
         return data
 
     def to_representation(self, instance):
-        recipe = instance.recipe
-        return ShortRecipeSerializer(recipe).data
+        return ShortRecipeSerializer(
+            instance.recipe,
+            context=self.context
+        ).data
 
 
 class ShoppingListSerializer(ShoppingFavoriteSerializer):
