@@ -1,4 +1,4 @@
-[![Main foodgram workflow](https://github.com/Kirill-Svitsov/foodgram-project-react/actions/workflows/main.yml/badge.svg)](https://github.com/Kirill-Svitsov/foodgram-project-react/actions/workflows/main.yml)
+[![Main foodgram workflow](https://github.com/Kirill-Svitsov/foodgram-project-react/actions/workflows/main.yml/badge.svg)](https://github.com/Kirill-Svitsov/foodgram-project-react/actions/workflows/main.yml) [![Website](https://img.shields.io/website?label=Website&url=https%3A%2F%2Fsvitsovdiplom.hopto.org%2Frecipes)](https://svitsovdiplom.hopto.org/recipes)
 
 # Foodgram graduation project by Kirill Svitsov
 
