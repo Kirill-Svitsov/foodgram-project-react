@@ -22,7 +22,7 @@ class UserAdmin(BaseUserAdmin):
     get_recipe_count.short_description = "Кол-во рецептов"
 
     def get_followers_count(self, obj):
-        return obj.followers.count()
+        return obj.follower.count()
 
     get_followers_count.short_description = "Кол-во подписчиков"
 

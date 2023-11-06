@@ -46,7 +46,7 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         return (
             request and request.user.is_authenticated
-            and request.user.following.filter(author=obj).exists()
+            and request.user.follower.filter(author=obj).exists()
         )
 
 
@@ -241,8 +241,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create(ingredients)
 
     def to_representation(self, recipe):
+        request = self.context.get('request')
         return RecipeGetSerializer(
-            recipe, context=self.context
+            recipe, context={'request': request}
         ).data
 
 
